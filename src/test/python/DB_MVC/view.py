@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QPushButton, \
                             QWidget, QLabel, QFrame, QSizePolicy, QComboBox, QDesktopWidget, QLineEdit, \
-                            QTableWidget, QTableWidgetItem, QAbstractItemView, QHeaderView, QCheckBox
+                            QTableWidget, QTableWidgetItem, QAbstractItemView, QHeaderView, QCheckBox, QDialog
 
 from PyQt5.QtCore import Qt
 
@@ -15,6 +15,12 @@ class WindowBuilder():
     
     def get_label(self,label_text:str):
         return QLabel(label_text)
+
+    def get_vlisn_widget(self):
+        vline = QFrame()
+        vline.setFrameShape(QFrame.VLine)
+        vline.setFrameShadow(QFrame.Sunken)
+        return vline
 
     def get_box_frame_widget(self,layout):
         frame = QFrame()
@@ -40,13 +46,26 @@ class WindowBuilder():
         lineEdit = QLineEdit()
         lineEdit.setFixedWidth(size) 
         return lineEdit
+    
+    def get_label_and_line_edit_layout(self, label_text,dialog_widgets={}):
+        layout = QHBoxLayout()
+        layout.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        # --------------------------
+        line_edit = QLineEdit()
+        line_edit.setFixedWidth(100) 
+        dialog_widgets[label_text] = line_edit
+        # --------------------------
+        layout.addStretch(1)
+        [layout.addWidget(x) for x in [QLabel(label_text), line_edit]]
+        return layout
 
 class View(QMainWindow):
     def __init__(self):
         super().__init__()
         self.wb = WindowBuilder()
         self.widgets = {}
-        self.layouts = {}        
+        self.layouts = {}
+        self.dialogs = {}
         # --------------------------
         screen = QDesktopWidget().screenGeometry() # 화면 크기 조정
         self.resize(int(screen.width() * 0.5), int(screen.height() * 0.4))
@@ -150,6 +169,8 @@ class View(QMainWindow):
         table_control_layout.addWidget(self.widgets["db_view_control_delete"])
         self.layouts['table_control'] = table_control_layout
         # --------------------------
+        self.get_db_view_insert_dialog()
+        # --------------------------
         top_layout = QHBoxLayout()
         top_layout.addLayout(self.layouts['table_select'])
         top_layout.addStretch(2)
@@ -171,14 +192,46 @@ class View(QMainWindow):
         # -------------------------------------------------------------------------------------------
         return widget
     # ===========================================================================================
-    
+
+    def get_db_view_insert_dialog(self, table_cols = []):
+        first_half_layout = QVBoxLayout()
+        second_half_layout = QVBoxLayout()
+
+        table_cols = [col for col in table_cols if 'sys_' not in col]
+        mid_idx = (len(table_cols) + 1) // 2
+        first_half, second_half = table_cols[:mid_idx], table_cols[mid_idx:]
+
+        self.dialog_widgets = {}
+
+        for col in first_half:
+            first_half_layout.addLayout(self.wb.get_label_and_line_edit_layout(col,self.dialog_widgets))
+        for col in second_half:
+            second_half_layout.addLayout(self.wb.get_label_and_line_edit_layout(col,self.dialog_widgets))
+        # --------------------------
+        input_layout = QHBoxLayout()
+        input_layout.addLayout(first_half_layout)
+        input_layout.addWidget(self.wb.get_vlisn_widget())
+        input_layout.addLayout(second_half_layout)
+        # --------------------------
+        layout = QVBoxLayout()
+        layout.addLayout(self.wb.get_box_frame_layout(input_layout))
+        self.widgets['db_view_insert_submit'] = self.wb.get_button('저장')
+        layout.addWidget(self.widgets['db_view_insert_submit'])
+        # --------------------------
+        dialog = QDialog(self)
+        dialog.setLayout(layout)
+        self.dialogs["db_view_insert"] = dialog
+
+    def show_db_view_insert_dialog(self):
+        self.dialogs["db_view_insert"].show()
+
+    # ===========================================================================================
     def get_temp_widget(self):
         widget = QWidget()
         layout = QHBoxLayout()
         layout.addWidget(QLabel("temp_view"))
         widget.setLayout(self.wb.get_box_frame_layout(layout))
         return widget
-
     def get_work_view_widget(self): return self.get_temp_widget()
     def get_make_paper_widget(self): return self.get_temp_widget()
     def get_order_view_widget(self): return self.get_temp_widget()

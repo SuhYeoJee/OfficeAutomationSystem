@@ -18,7 +18,7 @@ class Controller:
     def get_table_cols(self, table_name):
         cols_raw = self.model.dbi.execute_query(f"SHOW COLUMNS FROM {table_name};")
         return self.fatchall_data_to_list(cols_raw)
-    
+
     def get_table_contents(self,table_name):
         table_cols = self.get_table_cols(table_name)
         contents_raw = self.model.dbi.execute_query(f"SELECT * FROM {table_name};")
@@ -65,6 +65,13 @@ class Controller:
         self.model.dbi.execute_query(query)
         self.set_db_view_table_all_contents()
 
+    def do_table_insert(self,table_name,insert_data:dict):
+        cols = ', '.join('`' + k + '`' for k in insert_data.keys())
+        values = (', '.join("'" + v + "'" for v in insert_data.values())).replace("'NULL'","NULL")
+        query = f"INSERT INTO {table_name} ({cols}) VALUES ({values});"
+        self.model.dbi.execute_query(query)
+        self.set_db_view_table_all_contents()
+
 
     # [view] ===========================================================================================
     def view_button_mapping(self) -> None:
@@ -75,7 +82,8 @@ class Controller:
         self.view.widgets["db_view_search_submit"].clicked.connect(self.set_db_view_table_search_contents)
         self.view.widgets["db_view_control_update"].clicked.connect(self.update_selected_rows)
         self.view.widgets["db_view_control_delete"].clicked.connect(self.delete_selected_rows)
-
+        self.view.widgets["db_view_control_insert"].clicked.connect(self.update_and_show_insert_dialog)
+        self.view.widgets["db_view_insert_submit"].clicked.connect(self.insert_insert_dialog_data)
 
     # [view.db_view] -------------------------------------------------------------------------------------------
     def get_db_view_table_name(self) -> str:
@@ -94,7 +102,7 @@ class Controller:
             if check_box and check_box.isChecked():
                 checked_rows.append(row)
         else:
-            if 0 in checked_rows:
+            if 0 in checked_rows: # 전체선택
                 checked_rows = [row for row in range(self.view.widgets['table'].rowCount())]
         return checked_rows
     
@@ -118,6 +126,16 @@ class Controller:
             row_datas.append(self.get_db_view_row_data(row))
         return row_datas
 
+    #insert 다이얼로그에서 라벨 : 값 쌍으로 가져오기
+    def get_insert_data_from_dialog(self) -> dict:
+        insert_data = {}
+        for k in self.view.dialog_widgets:
+            value = self.view.dialog_widgets[k].text().strip()
+            insert_data[k] = value if value else 'NULL'
+        return insert_data
+
+    # -------------------------------------------------------------------------------------------
+
     def update_selected_rows(self):
         table_name = self.get_db_view_table_name()
         rows_datas = self.get_db_view_selected_rows_datas()
@@ -128,9 +146,18 @@ class Controller:
         rows_datas = self.get_db_view_selected_rows_datas()
         self.do_table_delete(table_name, rows_datas)
 
+    def update_and_show_insert_dialog(self):
+        table_name = self.get_db_view_table_name()
+        table_cols = self.get_table_cols(table_name)
+        self.view.get_db_view_insert_dialog(table_cols)
+        self.view.show_db_view_insert_dialog()
+        self.view.widgets["db_view_insert_submit"].clicked.connect(self.insert_insert_dialog_data)
 
-
-        
+    def insert_insert_dialog_data(self):
+        table_name = self.get_db_view_table_name()
+        self.view.dialogs['db_view_insert'].close()
+        insert_data = self.get_insert_data_from_dialog()
+        self.do_table_insert(table_name, insert_data)
 
     # --------------------------
     def set_db_view_table_name_combo_box(self) -> None:
@@ -147,7 +174,7 @@ class Controller:
         table_contents = self.get_table_contents(table_name)
         self.view.show_table(table_contents)
 
-    def set_db_view_table_search_contents(self):
+    def set_db_view_table_search_contents(self) -> None:
         table_name = self.get_db_view_table_name()
         table_col = self.get_db_view_search_col()
         keyword = self.get_db_view_search_keyword()

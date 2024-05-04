@@ -16,11 +16,12 @@
                 "db_view_search_line_edit",
                 "db_view_search_submit",
                 "db_view_control_insert",
+                "db_view_insert_submit",
                 "db_view_control_update",
                 "db_view_control_delete"
             ]
         ],
-        
+
         "layout":
         [
             "main",
@@ -32,6 +33,10 @@
                 "table_control"
             ],
             "table_view"
+        ],
+        "dialog":
+        [
+            "db_view_insert"
         ]
     }
 }
