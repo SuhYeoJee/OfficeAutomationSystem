@@ -1,8 +1,6 @@
-
-
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QPushButton, \
                             QWidget, QLabel, QFrame, QSizePolicy, QComboBox, QDesktopWidget, QLineEdit, \
-                            QTableWidget, QTableWidgetItem, QAbstractItemView, QHeaderView
+                            QTableWidget, QTableWidgetItem, QAbstractItemView, QHeaderView, QCheckBox
 
 from PyQt5.QtCore import Qt
 
@@ -97,31 +95,31 @@ class View(QMainWindow):
         table.setEditTriggers(QAbstractItemView.DoubleClicked)
 
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)        
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
 
     def show_table(self,dictList:list=[{}]):
         self.widgets['table'].clear()
         try:
-            self.init_table(len(dictList)+1,len(dictList[0])+1)
+            self.init_table(len(dictList)+1,len(dictList[0])+1) # 추가row(표머리), 추가col(체크박스)
         except IndexError:
             self.init_table(1,1)
             item = QTableWidgetItem(str('데이터가 없습니다.'))
             item.setTextAlignment(Qt.AlignCenter)
             self.widgets['table'].setItem(0, 0, item)
-        else:
+        else: #표 내용 작성
+            self.widgets['table'].setCellWidget(0, 0, QCheckBox())                
             for row, d in enumerate(dictList):
+                self.widgets['table'].setCellWidget(row+1, 0, QCheckBox())                
                 for col, (key, val) in enumerate(d.items(), start=1):
                     if row == 0: #colName
                         self.widgets['table'].setItem(0, col, QTableWidgetItem(str(key)))
                     self.widgets['table'].clearSpans()
                     self.widgets['table'].setItem(row + 1, col, QTableWidgetItem(str(val)))
+        self.widgets['table'].resizeColumnsToContents()
 
     def change_combo_box(self,target_combo_box,new_items):
         self.widgets[target_combo_box].clear()
         self.widgets[target_combo_box].addItems(new_items)
-
-    def get_combo_box_item(self,target_combo_box):
-        return self.widgets[target_combo_box].currentText().strip()
 
 
     # [view 구성] ===========================================================================================
@@ -162,7 +160,7 @@ class View(QMainWindow):
         # -------------------------------------------------------------------------------------------
         self.layouts['table_view'] = QVBoxLayout()
         self.layouts['table_view'].addWidget(self.widgets['table'])
-        self.show_table([])
+        self.show_table([{'1':'a','2':'b'},{'1':'ㄱ','2':'ㄴ'}])
         # --------------------------
         layout = QVBoxLayout()
         layout.addLayout(self.layouts['table_top'])

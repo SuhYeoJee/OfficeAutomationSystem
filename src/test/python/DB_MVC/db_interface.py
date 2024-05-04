@@ -8,7 +8,7 @@ class DBInterface:
             'host': host,
             'database': database,
             'port': port,
-            'raise_on_warnings': True
+            'raise_on_warnings': True,
         }
         self.connection = None
         self.cursor = None
