@@ -1,0 +1,37 @@
+{
+    "view":
+    {
+        "widget":
+        [
+            "main",
+            "table",
+            "order_view",
+            "work_view",
+            "paper_view",
+            "db_view",
+            [
+                "db_view_table_names_combo_box",
+                "db_view_table_names_submit",
+                "db_view_search_cols_combo_box",
+                "db_view_search_line_edit",
+                "db_view_search_submit",
+                "db_view_control_insert",
+                "db_view_control_update",
+                "db_view_control_delete"
+            ]
+        ],
+        
+        "layout":
+        [
+            "main",
+            "top_button",
+            "table_top",
+            [
+                "table_select",
+                "table_search",
+                "table_control"
+            ],
+            "table_view"
+        ]
+    }
+}

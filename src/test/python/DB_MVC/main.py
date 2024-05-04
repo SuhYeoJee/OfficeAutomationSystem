@@ -1,9 +1,8 @@
-from controller import Controller
+# from controller import Controller
 
-def main():
-    controller = Controller()
-    controller.run()
+# def main():
+#     controller = Controller()
 
-if __name__ == "__main__":
-    main()
-1
+# if __name__ == "__main__":
+#     main()
+# 1

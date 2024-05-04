@@ -59,7 +59,7 @@ class DBInterface:
     def execute_query(self,query:str):  # DB 명령어 수행
         try:
             self.cursor.execute(query)
-            if ('SELECT' in query) or ('DESCRIBE' in query):
+            if ('SELECT' in query) or ('DESCRIBE' in query) or ('SHOW' in query):
                 result = self.cursor.fetchall()
             else:
                 self.connection.commit()
