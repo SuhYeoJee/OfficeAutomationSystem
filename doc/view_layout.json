@@ -4,12 +4,12 @@
         "widget":
         [
             "main",
-            "table",
             "order_view",
             "work_view",
-            "paper_view",
             "db_view",
             [
+                "db_view_open",
+                "db_view_table",
                 "db_view_table_names_combo_box",
                 "db_view_table_names_submit",
                 "db_view_search_cols_combo_box",
@@ -19,6 +19,11 @@
                 "db_view_insert_submit",
                 "db_view_control_update",
                 "db_view_control_delete"
+            ],
+            "paper_view",
+            [
+                "paper_view_open",
+                "paper_view_table"
             ]
         ],
 
@@ -26,13 +31,23 @@
         [
             "main",
             "top_button",
-            "table_top",
             [
-                "table_select",
-                "table_search",
-                "table_control"
+                "db_view_table_top",
+                [
+                    "db_view_table_select",
+                    "db_view_table_search",
+                    "db_view_table_control"
+                ],
+                "db_view_table_view"
             ],
-            "table_view"
+            [
+                "",
+                [
+
+                ],
+                "paper_view_table_view"
+            ]
+
         ],
         "dialog":
         [

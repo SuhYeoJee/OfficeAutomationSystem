@@ -10,6 +10,9 @@ class Model:
         res = self.dbi.execute_query("SELECT DISTINCT * FROM `powder` ; ")
         pprint(res)
 
+    def make_ip(self):
+        ...
+
 def model_test():
     m = Model()
     m.dbi_test()

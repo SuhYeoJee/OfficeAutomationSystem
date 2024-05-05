@@ -32,6 +32,12 @@ class Controller:
         contents_raw = self.model.dbi.execute_query(query)
         return self.fatchall_data_to_dict_list(contents_raw,table_cols)
     
+    def get_table_filtered(self,table_name,filter:list):
+        table_cols = self.get_table_cols(table_name)
+        where = ' and '.join(filter)
+        contents_raw = self.model.dbi.execute_query(f"SELECT * FROM {table_name} WHERE {where};")
+        return self.fatchall_data_to_dict_list(contents_raw,table_cols)
+
     # -------------------------------------------------------------------------------------------
 
     def do_table_update(self,table_name,update_datas):
@@ -84,6 +90,9 @@ class Controller:
         self.view.widgets["db_view_control_delete"].clicked.connect(self.delete_selected_rows)
         self.view.widgets["db_view_control_insert"].clicked.connect(self.update_and_show_insert_dialog)
         self.view.widgets["db_view_insert_submit"].clicked.connect(self.insert_insert_dialog_data)
+        # --------------------------
+        # paper_view
+        self.view.widgets['paper_view_open'].clicked.connect(self.set_paper_view_table_all_contents)
 
     # [view.db_view] -------------------------------------------------------------------------------------------
     def get_db_view_table_name(self) -> str:
@@ -95,55 +104,57 @@ class Controller:
     def get_db_view_search_keyword(self) -> str:
         return self.view.widgets['db_view_search_line_edit'].text().strip()
     
-    def get_db_view_checked_rows(self) -> list:
+    def get_table_checked_rows(self, target_table:str = 'db_view_table') -> list:
         checked_rows = []
-        for row in range(self.view.widgets['table'].rowCount()):
-            check_box = self.view.widgets['table'].cellWidget(row, 0)
+        for row in range(self.view.widgets[target_table].rowCount()):
+            check_box = self.view.widgets[target_table].cellWidget(row, 0)
             if check_box and check_box.isChecked():
                 checked_rows.append(row)
         else:
             if 0 in checked_rows: # 전체선택
-                checked_rows = [row for row in range(self.view.widgets['table'].rowCount())]
+                checked_rows = [row for row in range(self.view.widgets[target_table].rowCount())]
         return checked_rows
     
-    def get_table_cell_text(self,row,col) -> str:
-        cell_item = self.view.widgets['table'].item(row, col)
+    def get_table_cell_text(self,row,col, target_table:str = 'db_view_table') -> str:
+        cell_item = self.view.widgets[target_table].item(row, col)
         if cell_item: 
             return cell_item.text()
         else:
             return 'NULL'
 
-    def get_db_view_row_data(self, row):
+    def get_table_row_data(self, row, target_table:str = 'db_view_table'):
         row_data = {}
-        for col in range(1, self.view.widgets['table'].columnCount()):
-            row_data[self.get_table_cell_text(0,col)] = self.get_table_cell_text(row,col)
+        for col in range(1, self.view.widgets[target_table].columnCount()):
+            cell_text = self.get_table_cell_text(row,col).strip()
+            cell_text = cell_text if cell_text else 'NULL'
+            row_data[self.get_table_cell_text(0,col).strip()] = cell_text
         return row_data
 
-    def get_db_view_selected_rows_datas(self):
-        selected_rows = self.get_db_view_checked_rows()
+    def get_table_selected_rows_datas(self):
+        selected_rows = self.get_table_checked_rows()
         row_datas = []
         for row in selected_rows:
-            row_datas.append(self.get_db_view_row_data(row))
+            row_datas.append(self.get_table_row_data(row))
         return row_datas
 
     #insert 다이얼로그에서 라벨 : 값 쌍으로 가져오기
     def get_insert_data_from_dialog(self) -> dict:
         insert_data = {}
         for k in self.view.dialog_widgets:
-            value = self.view.dialog_widgets[k].text().strip()
-            insert_data[k] = value if value else 'NULL'
+            line_edit_text = self.view.dialog_widgets[k].text().strip()
+            insert_data[k] = line_edit_text if line_edit_text else 'NULL'
         return insert_data
 
     # -------------------------------------------------------------------------------------------
 
     def update_selected_rows(self):
         table_name = self.get_db_view_table_name()
-        rows_datas = self.get_db_view_selected_rows_datas()
+        rows_datas = self.get_table_selected_rows_datas()
         self.do_table_update(table_name, rows_datas)
 
     def delete_selected_rows(self):
         table_name = self.get_db_view_table_name()
-        rows_datas = self.get_db_view_selected_rows_datas()
+        rows_datas = self.get_table_selected_rows_datas()
         self.do_table_delete(table_name, rows_datas)
 
     def update_and_show_insert_dialog(self):
@@ -180,6 +191,14 @@ class Controller:
         keyword = self.get_db_view_search_keyword()
         table_contents = self.get_table_search(table_name,table_col,keyword)
         self.view.show_table(table_contents)
+
+    # [view.paper_view] -------------------------------------------------------------------------------------------
+    def set_paper_view_table_all_contents(self) -> None:
+        table_name = 'powder'
+        table_contents = self.get_table_filtered(table_name,["`sys_description` is NULL"])
+        # ip 없는 녀석들
+        self.view.show_table(table_contents,'paper_view_table')
+
 
     # ===========================================================================================
 

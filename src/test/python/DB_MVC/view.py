@@ -72,11 +72,10 @@ class View(QMainWindow):
         self.setWindowTitle("NOVA Office Automation System")
         # --------------------------
         self.widgets['main'] = QWidget()
-        self.widgets['table'] = QTableWidget()
+        self.widgets['db_view'] = self.get_db_view_widget()
         self.widgets['order_view'] = self.get_order_view_widget()
         self.widgets['work_view'] = self.get_work_view_widget()
-        self.widgets['paper_view'] = self.get_make_paper_widget()
-        self.widgets['db_view'] = self.get_db_view_widget()
+        self.widgets['paper_view'] = self.get_paper_view_widget()
         self.setCentralWidget(self.widgets['main'])
         # --------------------------
         self.layouts['main'] = QVBoxLayout()
@@ -93,9 +92,10 @@ class View(QMainWindow):
     def get_top_button_layout(self):
         layout = QHBoxLayout()
         self.widgets['db_view_open'] = self.wb.get_button("DB 관리", self.show_this_view, 'db_view')
+        self.widgets['paper_view_open'] = self.wb.get_button("작업지시서 생성", self.show_this_view, 'paper_view')
         layout.addWidget(self.wb.get_button("수주 현황 보기", self.show_this_view, 'order_view'))
         layout.addWidget(self.wb.get_button("작업 현황 보기", self.show_this_view, 'work_view'))
-        layout.addWidget(self.wb.get_button("작업지시서 생성", self.show_this_view, 'paper_view'))
+        layout.addWidget(self.widgets['paper_view_open'])
         layout.addWidget(self.widgets['db_view_open'])
         return layout
     
@@ -105,10 +105,9 @@ class View(QMainWindow):
         else:
             self.widgets[widget].show()
 
-    
     # 테이블 생성, 열/행 세팅
-    def init_table(self,tableRowc,tableColc, table = None):
-        if not table: table = self.widgets['table']
+    def init_table(self,tableRowc,tableColc,target_table:str = 'db_view_table'):
+        table = self.widgets[target_table]
         table.setRowCount(tableRowc)
         table.setColumnCount(tableColc)
         table.setEditTriggers(QAbstractItemView.DoubleClicked)
@@ -116,25 +115,25 @@ class View(QMainWindow):
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
 
-    def show_table(self,dictList:list=[{}]):
-        self.widgets['table'].clear()
+    def show_table(self,dictList:list=[{}], target_table:str = 'db_view_table'):
+        self.widgets[target_table].clear()
         try:
-            self.init_table(len(dictList)+1,len(dictList[0])+1) # 추가row(표머리), 추가col(체크박스)
+            self.init_table(len(dictList)+1,len(dictList[0])+1,target_table) # 추가row(표머리), 추가col(체크박스)
         except IndexError:
-            self.init_table(1,1)
+            self.init_table(1,1,target_table)
             item = QTableWidgetItem(str('데이터가 없습니다.'))
             item.setTextAlignment(Qt.AlignCenter)
-            self.widgets['table'].setItem(0, 0, item)
+            self.widgets[target_table].setItem(0, 0, item)
         else: #표 내용 작성
-            self.widgets['table'].setCellWidget(0, 0, QCheckBox())                
+            self.widgets[target_table].setCellWidget(0, 0, QCheckBox())                
             for row, d in enumerate(dictList):
-                self.widgets['table'].setCellWidget(row+1, 0, QCheckBox())                
+                self.widgets[target_table].setCellWidget(row+1, 0, QCheckBox())                
                 for col, (key, val) in enumerate(d.items(), start=1):
                     if row == 0: #colName
-                        self.widgets['table'].setItem(0, col, QTableWidgetItem(str(key)))
-                    self.widgets['table'].clearSpans()
-                    self.widgets['table'].setItem(row + 1, col, QTableWidgetItem(str(val)))
-        self.widgets['table'].resizeColumnsToContents()
+                        self.widgets[target_table].setItem(0, col, QTableWidgetItem(str(key)))
+                    self.widgets[target_table].clearSpans()
+                    self.widgets[target_table].setItem(row + 1, col, QTableWidgetItem(str(val)))
+        self.widgets[target_table].resizeColumnsToContents()
 
     def change_combo_box(self,target_combo_box,new_items):
         self.widgets[target_combo_box].clear()
@@ -149,7 +148,7 @@ class View(QMainWindow):
         self.widgets["db_view_table_names_submit"] = self.wb.get_button("확인")
         table_select_layout.addWidget(self.widgets["db_view_table_names_combo_box"])
         table_select_layout.addWidget(self.widgets["db_view_table_names_submit"])
-        self.layouts['table_select'] = table_select_layout
+        self.layouts['db_view_table_select'] = table_select_layout
         # --------------------------
         table_search_layout = QHBoxLayout() # 테이블 검색 컬럼 콤보박스, 검색어 입력창, 검색버튼
         self.widgets["db_view_search_cols_combo_box"] = self.wb.get_combo_box_widget([])
@@ -158,7 +157,7 @@ class View(QMainWindow):
         table_search_layout.addWidget(self.widgets["db_view_search_cols_combo_box"])
         table_search_layout.addWidget(self.widgets["db_view_search_line_edit"])
         table_search_layout.addWidget(self.widgets["db_view_search_submit"])
-        self.layouts['table_search'] = table_search_layout
+        self.layouts['db_view_table_search'] = table_search_layout
         # --------------------------
         table_control_layout = QHBoxLayout() # 데이터 입력, 수정, 삭제 버튼
         self.widgets["db_view_control_insert"] = self.wb.get_button("입력")
@@ -167,32 +166,32 @@ class View(QMainWindow):
         table_control_layout.addWidget(self.widgets["db_view_control_insert"])
         table_control_layout.addWidget(self.widgets["db_view_control_update"])
         table_control_layout.addWidget(self.widgets["db_view_control_delete"])
-        self.layouts['table_control'] = table_control_layout
+        self.layouts['db_view_table_control'] = table_control_layout
         # --------------------------
         self.get_db_view_insert_dialog()
         # --------------------------
         top_layout = QHBoxLayout()
-        top_layout.addLayout(self.layouts['table_select'])
+        top_layout.addLayout(self.layouts['db_view_table_select'])
         top_layout.addStretch(2)
-        top_layout.addLayout(self.layouts['table_search'])
+        top_layout.addLayout(self.layouts['db_view_table_search'])
         top_layout.addStretch(1)
-        top_layout.addLayout(self.layouts['table_control'])
-        self.layouts['table_top'] = top_layout
+        top_layout.addLayout(self.layouts['db_view_table_control'])
+        self.layouts['db_view_table_top'] = top_layout
         # -------------------------------------------------------------------------------------------
-        self.layouts['table_view'] = QVBoxLayout()
-        self.layouts['table_view'].addWidget(self.widgets['table'])
-        self.show_table([{'1':'a','2':'b'},{'1':'ㄱ','2':'ㄴ'}])
+        self.layouts['db_view_table_view'] = QVBoxLayout()
+        self.widgets['db_view_table'] = QTableWidget()
+        self.layouts['db_view_table_view'].addWidget(self.widgets['db_view_table'])
+        self.show_table([{'1':'a','2':'b'},{'1':'ㄱ','2':'ㄴ'}],'db_view_table')
         # --------------------------
         layout = QVBoxLayout()
-        layout.addLayout(self.layouts['table_top'])
-        layout.addLayout(self.layouts['table_view'])
+        layout.addLayout(self.layouts['db_view_table_top'])
+        layout.addLayout(self.layouts['db_view_table_view'])
         # --------------------------
         widget = QWidget()
         widget.setLayout(self.wb.get_box_frame_layout(layout))
         # -------------------------------------------------------------------------------------------
         return widget
-    # ===========================================================================================
-
+    # -------------------------------------------------------------------------------------------
     def get_db_view_insert_dialog(self, table_cols = []):
         first_half_layout = QVBoxLayout()
         second_half_layout = QVBoxLayout()
@@ -221,19 +220,69 @@ class View(QMainWindow):
         dialog = QDialog(self)
         dialog.setLayout(layout)
         self.dialogs["db_view_insert"] = dialog
-
+    # -------------------------------------------------------------------------------------------
     def show_db_view_insert_dialog(self):
         self.dialogs["db_view_insert"].show()
-
     # ===========================================================================================
+    def get_paper_view_widget(self): 
+        t = QHBoxLayout()
+        t.setAlignment(Qt.AlignLeft)
+        t.addWidget(self.wb.get_button("선택 생성"))
+        t.addWidget(self.wb.get_button("전체 생성"))
+        # self.layouts['db_view_table_select'] = t
+        # --------------------------
+        top_layout = QHBoxLayout()
+        top_layout.addStretch(2)
+        top_layout.addLayout(t)
+        # self.layouts['db_view_table_top'] = top_layout
+        # --------------------------
+        self.layouts['paper_view_table_view'] = QVBoxLayout()
+        self.widgets['paper_view_table'] = QTableWidget()
+        self.layouts['paper_view_table_view'].addWidget(self.widgets['paper_view_table'])
+        self.show_table([{'1':'aa','2':'ba'},{'1':'ㄱa','2':'ㄴa'}],'paper_view_table')
+        # --------------------------
+        layout = QVBoxLayout()
+        layout.addLayout(top_layout)
+        layout.addLayout(self.layouts['paper_view_table_view'])
+        # --------------------------        
+        widget = QWidget()
+        widget.setLayout(self.wb.get_box_frame_layout(layout))
+        # --------------------------
+        return widget
+    # ===========================================================================================
+    def get_temp_view_widget(self): 
+        t = QHBoxLayout()
+        t.setAlignment(Qt.AlignLeft)
+        t.addWidget(self.wb.get_button("확인"))
+        # self.layouts['db_view_table_select'] = t
+        # --------------------------
+        top_layout = QHBoxLayout()
+        top_layout.addStretch(2)
+        top_layout.addLayout(t)
+        # self.layouts['db_view_table_top'] = top_layout
+        # --------------------------
+        self.layouts['paper_view_table_view'] = QVBoxLayout()
+        self.widgets['paper_view_table'] = QTableWidget()
+        self.layouts['paper_view_table_view'].addWidget(self.widgets['paper_view_table'])
+        self.show_table([{'1':'aa','2':'ba'},{'1':'ㄱa','2':'ㄴa'}],'paper_view_table')
+        # --------------------------
+        layout = QVBoxLayout()
+        layout.addLayout(top_layout)
+        layout.addLayout(self.layouts['paper_view_table_view'])
+        # --------------------------        
+        widget = QWidget()
+        widget.setLayout(self.wb.get_box_frame_layout(layout))
+        # --------------------------
+        return widget
+    # ===========================================================================================    
     def get_temp_widget(self):
         widget = QWidget()
         layout = QHBoxLayout()
         layout.addWidget(QLabel("temp_view"))
         widget.setLayout(self.wb.get_box_frame_layout(layout))
         return widget
+    # def get_paper_view_widget(self): return self.get_temp_widget()
     def get_work_view_widget(self): return self.get_temp_widget()
-    def get_make_paper_widget(self): return self.get_temp_widget()
     def get_order_view_widget(self): return self.get_temp_widget()
 
 # ===========================================================================================
