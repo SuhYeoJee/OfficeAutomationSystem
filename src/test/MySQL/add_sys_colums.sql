@@ -1,4 +1,4 @@
-ALTER TABLE `nova_db`.`powder` 
+ALTER TABLE `nova_db`.`diamond` 
 ADD COLUMN `sys_reg_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '자동생성' AFTER `sys_id`,
 ADD COLUMN `sys_update_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '자동생성' AFTER `sys_reg_date`,
 ADD COLUMN `sys_description` VARCHAR(300) NULL DEFAULT NULL AFTER `sys_update_date`,
