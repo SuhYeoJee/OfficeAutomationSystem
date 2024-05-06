@@ -10,78 +10,26 @@ class Controller:
         self.view = View()
         self.view_button_mapping()
 
-    # [model.dbi] ===========================================================================================
-    def get_table_names(self):
-        tables_raw = self.model.dbi.execute_query("SHOW TABLES;")
-        return self.fatchall_data_to_list(tables_raw)
-
-    def get_table_cols(self, table_name):
-        cols_raw = self.model.dbi.execute_query(f"SHOW COLUMNS FROM {table_name};")
-        return self.fatchall_data_to_list(cols_raw)
-
-    def get_table_contents(self,table_name):
-        table_cols = self.get_table_cols(table_name)
-        contents_raw = self.model.dbi.execute_query(f"SELECT * FROM {table_name};")
-        return self.fatchall_data_to_dict_list(contents_raw,table_cols)
-
-    def get_table_search(self,table_name,table_col,keyword):
-        keywords = ["'%"+k.strip().replace("'","\'")+"%'" for k in keyword.split(',')]
-        where_str = ' AND '.join([ '`'+ table_col + '` LIKE ' + k for k in keywords])
-        query = f"SELECT * FROM {table_name} WHERE {where_str};"
-        table_cols = self.get_table_cols(table_name)
-        contents_raw = self.model.dbi.execute_query(query)
-        return self.fatchall_data_to_dict_list(contents_raw,table_cols)
-    
-    def get_table_filtered(self,table_name,filter:list):
-        table_cols = self.get_table_cols(table_name)
-        where = ' and '.join(filter)
-        contents_raw = self.model.dbi.execute_query(f"SELECT * FROM {table_name} WHERE {where};")
-        return self.fatchall_data_to_dict_list(contents_raw,table_cols)
-
-    # -------------------------------------------------------------------------------------------
-
-    def do_table_update(self,table_name,update_datas):
-        querys, wheres = [], []
-
-        for data in update_datas:
-            sets = [f"`{k.strip()}` = '{data[k].strip()}'".replace("'NULL'","NULL") for k in data]
-            sets_str = ' , '.join(sets)
-            where_str = f"""{PK} = '{data[PK]}'"""
-            wheres.append(where_str)
-            querys.append(f"UPDATE {table_name} SET {sets_str} WHERE {where_str}; ")
-        for query in querys:
-            self.model.dbi.execute_query(query)
-
-        # 수정된 항목만 표시하기
-        query = f"SELECT * FROM {table_name} WHERE {' OR '.join(wheres)};"
-        table_cols = self.get_table_cols(table_name)
-        contents_raw = self.model.dbi.execute_query(query)
-        table_contents = self.fatchall_data_to_dict_list(contents_raw,table_cols)
+    # [table] ===========================================================================================
+    def do_table_update(self,table_name,update_datas=[{}]):
+        table_contents = self.model.update_table_and_select_updated(table_name,update_datas)
         self.view.show_table(table_contents)
 
-    def do_table_delete(self,table_name,update_datas):
-        querys, wheres = [], []
-
-        for data in update_datas:
-            where_str = f"""{PK} = '{data[PK]}'"""
-            wheres.append(where_str)
-            querys.append(f"DELETE FROM {table_name} WHERE {where_str}; ")
-        for query in querys:
-            self.model.dbi.execute_query(query)        
-        self.model.dbi.execute_query(query)
+    def do_table_delete(self,table_name,delete_datas=[{}]):
+        self.model.delete_table(table_name,delete_datas)
         self.set_db_view_table_all_contents()
 
-    def do_table_insert(self,table_name,insert_data:dict):
-        cols = ', '.join('`' + k + '`' for k in insert_data.keys())
-        values = (', '.join("'" + v + "'" for v in insert_data.values())).replace("'NULL'","NULL")
-        query = f"INSERT INTO {table_name} ({cols}) VALUES ({values});"
-        self.model.dbi.execute_query(query)
+    def do_table_insert(self,table_name,insert_data={}):
+        self.model.insert_table(table_name,insert_data)
         self.set_db_view_table_all_contents()
-
 
     # [view] ===========================================================================================
     def view_button_mapping(self) -> None:
-        # db_view
+        self.db_view_button_mapping()
+        # paper_view
+        self.view.widgets['paper_view_open'].clicked.connect(self.set_paper_view_table_all_contents)
+    
+    def db_view_button_mapping(self) -> None:
         self.view.widgets['db_view_open'].clicked.connect(self.set_db_view_table_name_combo_box)
         self.view.widgets["db_view_table_names_submit"].clicked.connect(self.set_db_view_table_col_combo_box)
         self.view.widgets["db_view_table_names_submit"].clicked.connect(self.set_db_view_table_all_contents)
@@ -89,21 +37,9 @@ class Controller:
         self.view.widgets["db_view_control_update"].clicked.connect(self.update_selected_rows)
         self.view.widgets["db_view_control_delete"].clicked.connect(self.delete_selected_rows)
         self.view.widgets["db_view_control_insert"].clicked.connect(self.update_and_show_insert_dialog)
-        self.view.widgets["db_view_insert_submit"].clicked.connect(self.insert_insert_dialog_data)
-        # --------------------------
-        # paper_view
-        self.view.widgets['paper_view_open'].clicked.connect(self.set_paper_view_table_all_contents)
+        self.view.widgets["db_view_insert_submit"].clicked.connect(self.insert_dialog_data)
 
-    # [view.db_view] -------------------------------------------------------------------------------------------
-    def get_db_view_table_name(self) -> str:
-        return self.view.widgets['db_view_table_names_combo_box'].currentText().strip()
-
-    def get_db_view_search_col(self) -> str:
-        return self.view.widgets['db_view_search_cols_combo_box'].currentText().strip()
-
-    def get_db_view_search_keyword(self) -> str:
-        return self.view.widgets['db_view_search_line_edit'].text().strip()
-    
+    # [view_table] ===========================================================================================
     def get_table_checked_rows(self, target_table:str = 'db_view_table') -> list:
         checked_rows = []
         for row in range(self.view.widgets[target_table].rowCount()):
@@ -114,7 +50,7 @@ class Controller:
             if 0 in checked_rows: # 전체선택
                 checked_rows = [row for row in range(self.view.widgets[target_table].rowCount())]
         return checked_rows
-    
+
     def get_table_cell_text(self,row,col, target_table:str = 'db_view_table') -> str:
         cell_item = self.view.widgets[target_table].item(row, col)
         if cell_item: 
@@ -137,6 +73,16 @@ class Controller:
             row_datas.append(self.get_table_row_data(row))
         return row_datas
 
+    # [view.db_view] -------------------------------------------------------------------------------------------
+    def get_db_view_table_name(self) -> str:
+        return self.view.widgets['db_view_table_names_combo_box'].currentText().strip()
+
+    def get_db_view_search_col(self) -> str:
+        return self.view.widgets['db_view_search_cols_combo_box'].currentText().strip()
+
+    def get_db_view_search_keyword(self) -> str:
+        return self.view.widgets['db_view_search_line_edit'].text().strip()
+    
     #insert 다이얼로그에서 라벨 : 값 쌍으로 가져오기
     def get_insert_data_from_dialog(self) -> dict:
         insert_data = {}
@@ -159,12 +105,12 @@ class Controller:
 
     def update_and_show_insert_dialog(self):
         table_name = self.get_db_view_table_name()
-        table_cols = self.get_table_cols(table_name)
+        table_cols = self.model.get_table_cols(table_name)
         self.view.get_db_view_insert_dialog(table_cols)
         self.view.show_db_view_insert_dialog()
-        self.view.widgets["db_view_insert_submit"].clicked.connect(self.insert_insert_dialog_data)
+        self.view.widgets["db_view_insert_submit"].clicked.connect(self.insert_dialog_data)
 
-    def insert_insert_dialog_data(self):
+    def insert_dialog_data(self):
         table_name = self.get_db_view_table_name()
         self.view.dialogs['db_view_insert'].close()
         insert_data = self.get_insert_data_from_dialog()
@@ -172,41 +118,32 @@ class Controller:
 
     # --------------------------
     def set_db_view_table_name_combo_box(self) -> None:
-        tables = self.get_table_names()
+        tables = self.model.get_table_names()
         self.view.change_combo_box('db_view_table_names_combo_box',tables)
 
     def set_db_view_table_col_combo_box(self) -> None:
         table_name = self.get_db_view_table_name()
-        table_cols = self.get_table_cols(table_name)
+        table_cols = self.model.get_table_cols(table_name)
         self.view.change_combo_box('db_view_search_cols_combo_box',table_cols)
 
     def set_db_view_table_all_contents(self) -> None:
         table_name = self.get_db_view_table_name()
-        table_contents = self.get_table_contents(table_name)
+        table_contents = self.model.select_table_all(table_name)
         self.view.show_table(table_contents)
 
     def set_db_view_table_search_contents(self) -> None:
         table_name = self.get_db_view_table_name()
         table_col = self.get_db_view_search_col()
         keyword = self.get_db_view_search_keyword()
-        table_contents = self.get_table_search(table_name,table_col,keyword)
+        table_contents = self.model.select_table_like_keyword(table_name,table_col,keyword)
         self.view.show_table(table_contents)
 
     # [view.paper_view] -------------------------------------------------------------------------------------------
     def set_paper_view_table_all_contents(self) -> None:
         table_name = 'powder'
-        table_contents = self.get_table_filtered(table_name,["`sys_description` is NULL"])
+        table_contents = self.model.select_table_with_wheres(table_name,["`sys_description` is NULL"])
         # ip 없는 녀석들
         self.view.show_table(table_contents,'paper_view_table')
-
-
-    # ===========================================================================================
-
-    def fatchall_data_to_list(self, data_raw):
-        return [item[0] for item in data_raw]
-    
-    def fatchall_data_to_dict_list(self,data_raw,table_cols):
-        return [{table_cols[i]: data[i] if data[i] is not None else '' for i in range(len(table_cols))} for data in data_raw]
 
 # ===========================================================================================
 
