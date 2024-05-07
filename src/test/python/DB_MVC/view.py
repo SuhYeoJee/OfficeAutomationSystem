@@ -227,8 +227,10 @@ class View(QMainWindow):
     def get_paper_view_widget(self): 
         t = QHBoxLayout()
         t.setAlignment(Qt.AlignLeft)
-        t.addWidget(self.wb.get_button("선택 생성"))
-        t.addWidget(self.wb.get_button("전체 생성"))
+        self.widgets['paper_view_select_submit'] = self.wb.get_button("선택 생성")
+        self.widgets['paper_view_all_submit'] = self.wb.get_button("전체 생성")
+        t.addWidget(self.widgets['paper_view_select_submit'] )
+        t.addWidget(self.widgets['paper_view_all_submit'] )
         # self.layouts['db_view_table_select'] = t
         # --------------------------
         top_layout = QHBoxLayout()

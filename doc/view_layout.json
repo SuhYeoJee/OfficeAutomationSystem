@@ -23,7 +23,9 @@
             "paper_view",
             [
                 "paper_view_open",
-                "paper_view_table"
+                "paper_view_table",
+                "paper_view_select_submit",
+                "paper_view_all_submit"
             ]
         ],
 
