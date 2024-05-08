@@ -25,41 +25,39 @@ class Controller:
     # [test] ===========================================================================================
 
     def t(self):
-        ...
         # --------------------------
-        rows_datas = self.get_table_selected_rows_datas('paper_view_table')
+        def get_ip_raw_datas(rows_datas):
+            ip_raw_datas = {}
+            for row_data in rows_datas:
+                where = f"`order_item_no` = '{row_data['order_item_no']}'"
+                [item_order_data] = self.model.select_table_with_wheres('item_order',[where])
 
-        # ip_raw_datas = {
-        #     'group_name':{
-        #         'item_datas':[item_data], 
-        #         'item_order_datas':[item_order_data]}}
-        ip_raw_datas = {}
-        for row_data in rows_datas:
-            where = f"`order_item_no` = '{row_data['order_item_no']}'"
-            [item_order_data] = self.model.select_table_with_wheres('item_order',[where])
+                where = f"`sys_id` = '{item_order_data['sys_item_id']}'"
+                [item_data] = self.model.select_table_with_wheres('item',[where])
 
-            where = f"`sys_id` = '{item_order_data['sys_item_id']}'"
-            [item_data] = self.model.select_table_with_wheres('item',[where])
+                group_name = item_data['group_name']
+                if group_name not in ip_raw_datas.keys():
+                    ip_raw_datas[group_name] = {'item_datas':[], 'item_order_datas':[]}
+                ip_raw_datas[group_name]['item_datas'].append(item_data)
+                ip_raw_datas[group_name]['item_order_datas'].append(item_order_data)
+            return ip_raw_datas
 
-            group_name = item_data['group_name']
-            if group_name not in ip_raw_datas.keys():
-                ip_raw_datas[group_name] = {'item_datas':[], 'item_order_datas':[]}
-            ip_raw_datas[group_name]['item_datas'].append(item_data)
-            ip_raw_datas[group_name]['item_order_datas'].append(item_order_data)
-
-        def transform_data(ip_raw_datas):
+        def get_ip_datas(ip_raw_datas):
             def add_or_update(target_dict, key, cnt):
                 target_dict[key] = target_dict.get(key, 0)+ cnt
             # -------------------------------------------------------------------------------------------
             result = {}
             for group_name, raw_data in ip_raw_datas.items():
-                result[group_name] = {'item':{}, 'seg': {}, 'shank': {}, 'sub': {}}
+                result[group_name] = {'item':{}, 'seg': {}, 'shank': {}, 'sub': {}, 'data':{}}
                 # --------------------------
                 for item_order_datas in raw_data['item_order_datas']:
                     item_name = item_order_datas['item_name']
                     if item_name:
                         item_amount = int(item_order_datas.get('item_amount', 0))
                         add_or_update(result[group_name]['item'],item_name,item_amount)
+                    # --------------------------
+                    result[group_name]['data']['due_date'] = item_order_datas['due_date']
+                    result[group_name]['data']['shank_memo1'] = item_order_datas['engrave']
                 # --------------------------
                 for item_datas in raw_data['item_datas']:
                     item_name = item_datas['name']
@@ -69,6 +67,11 @@ class Controller:
                     shank_name = item_datas['shank_name']
                     sub1_name = item_datas['sub1_name']
                     sub2_name = item_datas['sub2_name']
+                    result[group_name]['data']['ip_no3'] = item_datas['recent_ip']
+                    result[group_name]['data']['shank_memo2'] = item_datas['mark']
+                    result[group_name]['data']['welding1'] = item_datas['welding']
+                    result[group_name]['data']['dressing1'] = item_datas['dressing']
+                    result[group_name]['data']['paint1'] = item_datas['color']
                     if seg1_no:
                         seg1_amount = int(item_datas.get('seg1_amount', 0))*item_amount
                         add_or_update(result[group_name]['seg'],seg1_no,seg1_amount)
@@ -85,60 +88,33 @@ class Controller:
                         sub2_amount = int(item_datas.get('sub2_amount', 0))*item_amount
                         add_or_update(result[group_name]['sub'],sub2_name,sub2_amount)      
             return result
-
+        
+        def get_new_ips(ip_datas):
+            new_ips = []
+            for group_name, group_data in ip_datas.items():
+                new_ip = {"item_group_name": group_name}
+                
+                for key, items in group_data.items():
+                    if key == 'data':
+                        for idx, (k, val) in enumerate(items.items(), start=1):
+                            new_ip[k] = val
+                    else:
+                        for idx, (name, amount) in enumerate(items.items(), start=1):
+                            new_ip[f"{key}{idx}_{'no' if key == 'seg' else 'name'}"] = name
+                            new_ip[f"{key}{idx}_amount"] = str(amount)
+                new_ips.append(new_ip)
+            return new_ips
         # ===========================================================================================
-        ip_datas = transform_data(ip_raw_datas)
-        # {'TEST': {'item': {'TEST_ITEM': 1, 'TEST_ITEM2': 2},
-        #         'seg': {'SQ0000': 4, 'SQ0001': 2, 'SQ9999': 1},
-        #         'shank': {'3"DISC-CCW': 1, '3"DISC-CW': 2},
-        #         'sub': {'PCD10': 2, 'PCD12': 1}}}
-        from pprint import pprint
-        pprint(ip_datas)
 
+        rows_datas = self.get_table_selected_rows_datas('paper_view_table')
+        ip_raw_datas = get_ip_raw_datas(rows_datas)
+        ip_datas = get_ip_datas(ip_raw_datas)
+        new_ips = get_new_ips(ip_datas)
 
-        # new_ip = {
-        #     "ip_no" : '',
-        #     "ip_no1" : '',
-        #     "ip_no2" : '',
-        #     "ip_no3" : '',
-        #     "date" : '',
-        #     "due_date" : '',
-        #     "image" : '',
-        #     "paint1" : '',
-        #     "item_group_name" : '',
-        #         "item1_name" : '',
-        #         "item1_amount" : '',
-        #         "item2_name" : '',
-        #         "item2_amount" : '',
-        #         "item3_name" : '',
-        #         "item3_amount" : '',
-        #         "item4_name" : '',
-        #         "item4_amount" : '',
-        #             "seg1_no" : '',
-        #             "seg1_amount" : '',
-        #             "seg2_no" : '',
-        #             "seg2_amount" : '',
-        #                 "shank1_name" : '',
-        #                 "shank1_amount" : '',
-        #                 "shank2_name" : '',
-        #                 "shank2_amount" : '',
-        #                 "shank3_name" : '',
-        #                 "shank3_amount" : '',
-        #                 "shank4_name" : '',
-        #                 "shank4_amount" : '',
-        #                     "sub1_name" : '',
-        #                     "sub1_amount" : '',
-        #                     "sub2_name" : '',
-        #                     "sub2_amount" : '',
-        #                     "sub3_name" : '',
-        #                     "sub3_amount" : '',
-        #                     "sub4_name" : '',
-        #                     "sub4_amount" : '',
-        # }
+        for new_ip in new_ips:
+            new_ip = {x:new_ip[x] if new_ip[x] else 'NULL' for x in new_ip}
+            self.model.insert_table('ip',new_ip)
 
-        # new_ip = {x:new_ip[x] if new_ip[x] else 'NULL' for x in new_ip}
-
-        # self.model.insert_table('ip',new_ip)
 
 
     # [view] ===========================================================================================
@@ -270,3 +246,6 @@ if __name__ == "__main__":
     ctrl = Controller()
     ctrl.view.show()
     app.exec_()
+
+
+
