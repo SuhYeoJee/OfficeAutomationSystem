@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QPushButton, \
                             QWidget, QLabel, QFrame, QSizePolicy, QComboBox, QDesktopWidget, QLineEdit, \
                             QTableWidget, QTableWidgetItem, QAbstractItemView, QHeaderView, QCheckBox, QDialog
-
 from PyQt5.QtCore import Qt
 
 class WindowBuilder():
@@ -16,7 +15,7 @@ class WindowBuilder():
     def get_label(self,label_text:str):
         return QLabel(label_text)
 
-    def get_vlisn_widget(self):
+    def get_vline_widget(self):
         vline = QFrame()
         vline.setFrameShape(QFrame.VLine)
         vline.setFrameShadow(QFrame.Sunken)
@@ -139,7 +138,6 @@ class View(QMainWindow):
         self.widgets[target_combo_box].clear()
         self.widgets[target_combo_box].addItems(new_items)
 
-
     # [view 구성] ===========================================================================================
     def get_db_view_widget(self):
         table_select_layout = QHBoxLayout() # 테이블 선택 콤보박스, 확인버튼
@@ -209,7 +207,7 @@ class View(QMainWindow):
         # --------------------------
         input_layout = QHBoxLayout()
         input_layout.addLayout(first_half_layout)
-        input_layout.addWidget(self.wb.get_vlisn_widget())
+        input_layout.addWidget(self.wb.get_vline_widget())
         input_layout.addLayout(second_half_layout)
         # --------------------------
         layout = QVBoxLayout()
@@ -286,6 +284,11 @@ class View(QMainWindow):
     # def get_paper_view_widget(self): return self.get_temp_widget()
     def get_work_view_widget(self): return self.get_temp_widget()
     def get_order_view_widget(self): return self.get_temp_widget()
+
+# ===========================================================================================
+
+
+
 
 # ===========================================================================================
 

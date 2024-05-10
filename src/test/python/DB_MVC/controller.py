@@ -24,105 +24,24 @@ class Controller:
 
     # [test] ===========================================================================================
 
-    def t(self):
-        # --------------------------
-        def get_ip_raw_datas(rows_datas):
-            ip_raw_datas = {}
-            for row_data in rows_datas:
-                where = f"`order_item_no` = '{row_data['order_item_no']}'"
-                [item_order_data] = self.model.select_table_with_wheres('item_order',[where])
-
-                where = f"`sys_id` = '{item_order_data['sys_item_id']}'"
-                [item_data] = self.model.select_table_with_wheres('item',[where])
-
-                group_name = item_data['group_name']
-                if group_name not in ip_raw_datas.keys():
-                    ip_raw_datas[group_name] = {'item_datas':[], 'item_order_datas':[]}
-                ip_raw_datas[group_name]['item_datas'].append(item_data)
-                ip_raw_datas[group_name]['item_order_datas'].append(item_order_data)
-            return ip_raw_datas
-
-        def get_ip_datas(ip_raw_datas):
-            def add_or_update(target_dict, key, cnt):
-                target_dict[key] = target_dict.get(key, 0)+ cnt
-            # -------------------------------------------------------------------------------------------
-            result = {}
-            for group_name, raw_data in ip_raw_datas.items():
-                result[group_name] = {'item':{}, 'seg': {}, 'shank': {}, 'sub': {}, 'data':{}}
-                # --------------------------
-                for item_order_datas in raw_data['item_order_datas']:
-                    item_name = item_order_datas['item_name']
-                    if item_name:
-                        item_amount = int(item_order_datas.get('item_amount', 0))
-                        add_or_update(result[group_name]['item'],item_name,item_amount)
-                    # --------------------------
-                    result[group_name]['data']['due_date'] = item_order_datas['due_date']
-                    result[group_name]['data']['shank_memo1'] = item_order_datas['engrave']
-                # --------------------------
-                for item_datas in raw_data['item_datas']:
-                    item_name = item_datas['name']
-                    item_amount = result[group_name]['item'][item_name]
-                    seg1_no = item_datas['seg1_no']
-                    seg2_no = item_datas['seg2_no']
-                    shank_name = item_datas['shank_name']
-                    sub1_name = item_datas['sub1_name']
-                    sub2_name = item_datas['sub2_name']
-                    result[group_name]['data']['ip_no3'] = item_datas['recent_ip']
-                    result[group_name]['data']['shank_memo2'] = item_datas['mark']
-                    result[group_name]['data']['welding1'] = item_datas['welding']
-                    result[group_name]['data']['dressing1'] = item_datas['dressing']
-                    result[group_name]['data']['paint1'] = item_datas['color']
-                    if seg1_no:
-                        seg1_amount = int(item_datas.get('seg1_amount', 0))*item_amount
-                        add_or_update(result[group_name]['seg'],seg1_no,seg1_amount)
-                    if seg2_no:
-                        seg2_amount = int(item_datas.get('seg2_amount', 0))*item_amount
-                        add_or_update(result[group_name]['seg'],seg2_no,seg2_amount)                        
-                    if shank_name:
-                        shank_amount = int(item_datas.get('shank_amount', 0))*item_amount
-                        add_or_update(result[group_name]['shank'],shank_name,shank_amount)                             
-                    if sub1_name:
-                        sub1_amount = int(item_datas.get('sub1_amount', 0))*item_amount
-                        add_or_update(result[group_name]['sub'],sub1_name,sub1_amount)                             
-                    if sub2_name:
-                        sub2_amount = int(item_datas.get('sub2_amount', 0))*item_amount
-                        add_or_update(result[group_name]['sub'],sub2_name,sub2_amount)      
-            return result
+    def t(self):...
         
-        def get_new_ips(ip_datas):
-            new_ips = []
-            for group_name, group_data in ip_datas.items():
-                new_ip = {"item_group_name": group_name}
-                
-                for key, items in group_data.items():
-                    if key == 'data':
-                        for idx, (k, val) in enumerate(items.items(), start=1):
-                            new_ip[k] = val
-                    else:
-                        for idx, (name, amount) in enumerate(items.items(), start=1):
-                            new_ip[f"{key}{idx}_{'no' if key == 'seg' else 'name'}"] = name
-                            new_ip[f"{key}{idx}_amount"] = str(amount)
-                new_ips.append(new_ip)
-            return new_ips
-        # ===========================================================================================
 
-        rows_datas = self.get_table_selected_rows_datas('paper_view_table')
-        ip_raw_datas = get_ip_raw_datas(rows_datas)
-        ip_datas = get_ip_datas(ip_raw_datas)
-        new_ips = get_new_ips(ip_datas)
-
-        for new_ip in new_ips:
-            new_ip = {x:new_ip[x] if new_ip[x] else 'NULL' for x in new_ip}
-            self.model.insert_table('ip',new_ip)
-
+    def on_ip_no_cell_clicked(self, row, col):
+        if col == self.get_table_col_index('ip_no'):
+            print("Specific cell clicked at row:", row, "column:", col)
+            # open ip viewer
 
 
     # [view] ===========================================================================================
     def view_button_mapping(self) -> None:
+        self.view.widgets['db_view_table'].cellClicked.connect(self.on_ip_no_cell_clicked) # ip 뷰어 연결
+
         self.db_view_button_mapping()
         # paper_view
-        self.view.widgets['paper_view_open'].clicked.connect(self.set_paper_view_table_all_contents)
-        self.view.widgets['paper_view_select_submit'].clicked.connect(self.t)
+        self.view.widgets['paper_view_open'].clicked.connect(self.set_paper_view_table_first_contents)
+        self.view.widgets['paper_view_select_submit'].clicked.connect(self.do_ip_for_selected_item_order)
+        self.view.widgets['paper_view_all_submit'].clicked.connect(self.do_ip_for_all_item_order)
     
     def db_view_button_mapping(self) -> None:
         self.view.widgets['db_view_open'].clicked.connect(self.set_db_view_table_name_combo_box)
@@ -138,13 +57,16 @@ class Controller:
     def get_table_checked_rows(self, target_table:str = 'db_view_table') -> list:
         checked_rows = []
         for row in range(self.view.widgets[target_table].rowCount()):
-            check_box = self.view.widgets[target_table].cellWidget(row, 0)
-            if check_box and check_box.isChecked():
+            checkbox = self.view.widgets[target_table].cellWidget(row, 0)
+            if checkbox and checkbox.isChecked():
                 checked_rows.append(row)
         else:
             if 0 in checked_rows: # 전체선택
-                checked_rows = [row for row in range(self.view.widgets[target_table].rowCount())]
+                checked_rows = self.get_table_all_rows(target_table)
         return checked_rows
+
+    def get_table_all_rows(self, target_table:str = 'db_view_table') -> list:
+        return [row for row in range(self.view.widgets[target_table].rowCount()) if row]
 
     def get_table_cell_text(self,row,col, target_table:str = 'db_view_table') -> str:
         cell_item = self.view.widgets[target_table].item(row, col)
@@ -161,8 +83,22 @@ class Controller:
             row_data[self.get_table_cell_text(0,col,target_table).strip()] = cell_text
         return row_data
 
+    def get_table_col_index(self, col_name, target_table:str = 'db_view_table'):
+        for col in range(1, self.view.widgets[target_table].columnCount()):
+            cell_text = self.get_table_cell_text(0,col,target_table).strip()
+            cell_text = cell_text if cell_text else 'NULL'
+            if cell_text == col_name:
+                return col
+
     def get_table_selected_rows_datas(self,target_table:str = 'db_view_table'):
         selected_rows = self.get_table_checked_rows(target_table)
+        row_datas = []
+        for row in selected_rows:
+            row_datas.append(self.get_table_row_data(row,target_table))
+        return row_datas
+
+    def get_table_all_rows_datas(self,target_table:str = 'db_view_table'):
+        selected_rows = self.get_table_all_rows(target_table)
         row_datas = []
         for row in selected_rows:
             row_datas.append(self.get_table_row_data(row,target_table))
@@ -234,10 +170,27 @@ class Controller:
         self.view.show_table(table_contents)
 
     # [view.paper_view] -------------------------------------------------------------------------------------------
-    def set_paper_view_table_all_contents(self) -> None:
+    def set_paper_view_table_first_contents(self) -> None:
         table_name = 'item_order'
-        table_contents = self.model.select_table_with_wheres(table_name,["`sys_ip_id` is NULL"])
+        where_str = self.model.get_where_str('sys_ip_id',None)
+        table_contents = self.model.select_table_with_wheres(table_name,[where_str])
         self.view.show_table(table_contents,'paper_view_table')
+
+    def do_ip_for_selected_item_order(self):
+        rows_datas = self.get_table_selected_rows_datas('paper_view_table')
+        self.model.make_and_insert_new_ips(rows_datas)
+        self.set_paper_view_table_new_ips()
+
+    def do_ip_for_all_item_order(self):
+        rows_datas = self.get_table_all_rows_datas('paper_view_table')
+        self.model.make_and_insert_new_ips(rows_datas)
+        self.set_paper_view_table_new_ips()
+
+    def set_paper_view_table_new_ips(self):
+        table_contents = self.model.select_table_current_1mins('ip')
+        self.view.show_table(table_contents,'paper_view_table')
+        # self.view.widgets['paper_view_table'].cellClicked.connect(self.on_ip_no_cell_clicked) # ip 뷰어 연결
+
 
 # ===========================================================================================
 
