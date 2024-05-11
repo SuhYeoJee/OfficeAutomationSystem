@@ -129,8 +129,8 @@ class Model:
     def select_table_current_1mins(self,table_name):
         from datetime import datetime, timedelta
         now = datetime.now()
-        one_minute_ago = now - timedelta(minutes=1)
-        where = f"sys_reg_date BETWEEN '{one_minute_ago}' AND '{now}'"        
+        one_minute_ago = now - timedelta(minutes=60)
+        where = f"sys_update_date BETWEEN '{one_minute_ago}' AND '{now}'"        
         return self.select_table_with_wheres(table_name,[where])
 
     # [insert] ===========================================================================================
@@ -174,7 +174,7 @@ class Model:
         return table_contents
     # [] ===========================================================================================
     def get_where_str(self,col,data,operation = '='):
-        if data == None:
+        if (data == None) or (data == {}):
             operation = 'IS' if operation == '=' else operation
             operation = 'IS NOT' if operation == '!=' else operation                
             where = f"""`{col}` {operation} NULL"""

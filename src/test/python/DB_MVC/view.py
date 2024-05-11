@@ -1,7 +1,8 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QPushButton, \
-                            QWidget, QLabel, QFrame, QSizePolicy, QComboBox, QDesktopWidget, QLineEdit, \
-                            QTableWidget, QTableWidgetItem, QAbstractItemView, QHeaderView, QCheckBox, QDialog
-from PyQt5.QtCore import Qt
+if __debug__:
+    import sys
+    sys.path.append(r"D:\Github\OfficeAutomationSystem")
+from src.module.table_plus_widget import *
+from src.test.python.ip_view.ip_view import IPViewer
 
 class WindowBuilder():
     def __init__(self):
@@ -177,7 +178,7 @@ class View(QMainWindow):
         self.layouts['db_view_table_top'] = top_layout
         # -------------------------------------------------------------------------------------------
         self.layouts['db_view_table_view'] = QVBoxLayout()
-        self.widgets['db_view_table'] = QTableWidget()
+        self.widgets['db_view_table'] = TablePlusWidget()
         self.layouts['db_view_table_view'].addWidget(self.widgets['db_view_table'])
         self.show_table([{'1':'a','2':'b'},{'1':'ㄱ','2':'ㄴ'}],'db_view_table')
         # --------------------------
@@ -237,7 +238,7 @@ class View(QMainWindow):
         # self.layouts['db_view_table_top'] = top_layout
         # --------------------------
         self.layouts['paper_view_table_view'] = QVBoxLayout()
-        self.widgets['paper_view_table'] = QTableWidget()
+        self.widgets['paper_view_table'] = TablePlusWidget()
         self.layouts['paper_view_table_view'].addWidget(self.widgets['paper_view_table'])
         self.show_table([{'1':'aa','2':'ba'},{'1':'ㄱa','2':'ㄴa'}],'paper_view_table')
         # --------------------------
@@ -262,7 +263,7 @@ class View(QMainWindow):
         # self.layouts['db_view_table_top'] = top_layout
         # --------------------------
         self.layouts['paper_view_table_view'] = QVBoxLayout()
-        self.widgets['paper_view_table'] = QTableWidget()
+        self.widgets['paper_view_table'] = TablePlusWidget()
         self.layouts['paper_view_table_view'].addWidget(self.widgets['paper_view_table'])
         self.show_table([{'1':'aa','2':'ba'},{'1':'ㄱa','2':'ㄴa'}],'paper_view_table')
         # --------------------------
@@ -284,6 +285,11 @@ class View(QMainWindow):
     # def get_paper_view_widget(self): return self.get_temp_widget()
     def get_work_view_widget(self): return self.get_temp_widget()
     def get_order_view_widget(self): return self.get_temp_widget()
+    # ===========================================================================================
+    def get_ip_viewer(self,ip_data):
+        dialog = IPViewer(self,ip_data)
+        dialog.show()
+        self.dialogs["ip_viewer"] = dialog
 
 # ===========================================================================================
 

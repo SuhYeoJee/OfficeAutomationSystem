@@ -2,6 +2,11 @@ from model import Model
 from view import View
 from PyQt5.QtWidgets import QApplication
 
+if __debug__:
+    import sys
+    sys.path.append(r"D:\Github\OfficeAutomationSystem")
+from src.module.table_plus_widget import *
+
 class Controller:
     def __init__(self):
         self.model = Model()
@@ -24,18 +29,22 @@ class Controller:
 
     # [test] ===========================================================================================
 
-    def t(self):...
-        
+    def t(self):
+        print('t')
+    
 
     def on_ip_no_cell_clicked(self, row, col):
-        if col == self.get_table_col_index('ip_no'):
-            print("Specific cell clicked at row:", row, "column:", col)
-            # open ip viewer
-
+        if col == self.get_table_col_index('ip_no','paper_view_table'):
+            ip_no = self.get_table_by_name('paper_view_table').get_cell_text((row,col))
+            ip_data = self.model.select_table_with_wheres('ip',[f"`auto_ip_no` = '{ip_no}'"])[0]
+            self.view.get_ip_viewer(ip_data)
+            self.view.dialogs['ip_viewer'].widgets["ip_viewer_submit"].clicked.connect(lambda: self.ip_viewer_update_ip(ip_data['sys_id']))
+            self.view.dialogs['ip_viewer'].widgets["ip_viewer_image_export"].clicked.connect(self.t)
+            self.view.dialogs['ip_viewer'].widgets["ip_viewer_xlsx_export"].clicked.connect(self.t)
 
     # [view] ===========================================================================================
     def view_button_mapping(self) -> None:
-        self.view.widgets['db_view_table'].cellClicked.connect(self.on_ip_no_cell_clicked) # ip 뷰어 연결
+        self.view.widgets['paper_view_table'].cellClicked.connect(self.on_ip_no_cell_clicked) # ip 뷰어 연결
 
         self.db_view_button_mapping()
         # paper_view
@@ -54,55 +63,31 @@ class Controller:
         self.view.widgets["db_view_insert_submit"].clicked.connect(self.insert_dialog_data)
 
     # [view_table] ===========================================================================================
+
+    def get_table_by_name(self,target_table:str) -> TablePlusWidget:
+        return self.view.widgets[target_table]
+
     def get_table_checked_rows(self, target_table:str = 'db_view_table') -> list:
-        checked_rows = []
-        for row in range(self.view.widgets[target_table].rowCount()):
-            checkbox = self.view.widgets[target_table].cellWidget(row, 0)
-            if checkbox and checkbox.isChecked():
-                checked_rows.append(row)
-        else:
-            if 0 in checked_rows: # 전체선택
-                checked_rows = self.get_table_all_rows(target_table)
-        return checked_rows
+        return self.get_table_by_name(target_table).get_checked_rows()
 
     def get_table_all_rows(self, target_table:str = 'db_view_table') -> list:
-        return [row for row in range(self.view.widgets[target_table].rowCount()) if row]
+        return self.get_table_by_name(target_table).get_all_rows()
 
     def get_table_cell_text(self,row,col, target_table:str = 'db_view_table') -> str:
-        cell_item = self.view.widgets[target_table].item(row, col)
-        if cell_item: 
-            return cell_item.text()
-        else:
-            return 'NULL'
+        cell_item = self.get_table_by_name(target_table).get_cell_text((row,col))
+        return cell_item if cell_item else 'NULL'
 
     def get_table_row_data(self, row, target_table:str = 'db_view_table'):
-        row_data = {}
-        for col in range(1, self.view.widgets[target_table].columnCount()):
-            cell_text = self.get_table_cell_text(row,col,target_table).strip()
-            cell_text = cell_text if cell_text else 'NULL'
-            row_data[self.get_table_cell_text(0,col,target_table).strip()] = cell_text
-        return row_data
+        return self.get_table_by_name(target_table).get_row_data(row)
 
     def get_table_col_index(self, col_name, target_table:str = 'db_view_table'):
-        for col in range(1, self.view.widgets[target_table].columnCount()):
-            cell_text = self.get_table_cell_text(0,col,target_table).strip()
-            cell_text = cell_text if cell_text else 'NULL'
-            if cell_text == col_name:
-                return col
+        return self.get_table_by_name(target_table).get_col_index(col_name)
 
     def get_table_selected_rows_datas(self,target_table:str = 'db_view_table'):
-        selected_rows = self.get_table_checked_rows(target_table)
-        row_datas = []
-        for row in selected_rows:
-            row_datas.append(self.get_table_row_data(row,target_table))
-        return row_datas
+        return self.get_table_by_name(target_table).get_selected_rows_datas()
 
     def get_table_all_rows_datas(self,target_table:str = 'db_view_table'):
-        selected_rows = self.get_table_all_rows(target_table)
-        row_datas = []
-        for row in selected_rows:
-            row_datas.append(self.get_table_row_data(row,target_table))
-        return row_datas
+        return self.get_table_by_name(target_table).get_all_rows_datas()
 
     # [view.db_view] -------------------------------------------------------------------------------------------
     def get_db_view_table_name(self) -> str:
@@ -187,9 +172,14 @@ class Controller:
         self.set_paper_view_table_new_ips()
 
     def set_paper_view_table_new_ips(self):
-        table_contents = self.model.select_table_current_1mins('ip')
+        table_contents = self.model.select_table_current_1mins('item_order')
         self.view.show_table(table_contents,'paper_view_table')
         # self.view.widgets['paper_view_table'].cellClicked.connect(self.on_ip_no_cell_clicked) # ip 뷰어 연결
+
+    def ip_viewer_update_ip(self,sys_id):
+        ip_data = self.view.dialogs['ip_viewer'].widgets["ip_viewer_table"].get_labeled_data()
+        ip_data['sys_id'] =  sys_id
+        self.model.update_table_and_select_updated('ip',[ip_data])
 
 
 # ===========================================================================================

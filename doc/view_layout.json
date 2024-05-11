@@ -1,7 +1,7 @@
 {
     "view":
     {
-        "widget":
+        "widgets":
         [
             "main",
             "order_view",
@@ -26,10 +26,11 @@
                 "paper_view_table",
                 "paper_view_select_submit",
                 "paper_view_all_submit"
+           
             ]
         ],
 
-        "layout":
+        "layouts":
         [
             "main",
             "top_button",
@@ -51,9 +52,20 @@
             ]
 
         ],
-        "dialog":
+        "dialogs":
         [
-            "db_view_insert"
+            "db_view_insert",
+            "ip_viewer"
+        ]
+    },
+    "IPViewer":
+    {
+        "widgets":
+        [
+            "ip_viewer_table",
+            "ip_viewer_submit",
+            "ip_viewer_image_export",
+            "ip_viewer_xlsx_export"     
         ]
     }
 }
