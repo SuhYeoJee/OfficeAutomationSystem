@@ -50,7 +50,7 @@ class Model:
                     shank_name = item_datas['shank_name']
                     sub1_name = item_datas['sub1_name']
                     sub2_name = item_datas['sub2_name']
-                    result[group_name]['data']['auto_ip_no3'] = item_datas['recent_ip']
+                    # result[group_name]['data']['auto_ip_no3'] = item_datas['recent_ip']
                     result[group_name]['data']['shank_memo2'] = item_datas['mark']
                     result[group_name]['data']['welding1'] = item_datas['welding']
                     result[group_name]['data']['dressing1'] = item_datas['dressing']

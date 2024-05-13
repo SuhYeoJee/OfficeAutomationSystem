@@ -266,7 +266,7 @@ class TestWindow(QMainWindow):
         self.setCentralWidget(self.wb.get_button("ip_view",self.open_ip_view))
 
     def open_ip_view(self):
-        dialog = IPViewer(self)
+        dialog = IPViewer(self,{'auto_date':"asdlfialwseijf"})
         dialog.show()
         from pprint import pprint
         pprint(dialog.get_ip_view_table().get_labeled_data())
@@ -282,7 +282,7 @@ def ipv_test():
 def ipvt_test():
     app = QApplication([])
     i = IpViewTable()
-    i.set_ip_data({(0,0):"asdlfialwseijf"})
+    i.set_ip_data({'auto_date':"asdlfialwseijf"})
     app.exec_()
 
 if __name__ == "__main__":
