@@ -42,6 +42,18 @@ class Controller:
             self.view.dialogs['ip_viewer'].widgets["ip_viewer_image_export"].clicked.connect(self.t)
             self.view.dialogs['ip_viewer'].widgets["ip_viewer_xlsx_export"].clicked.connect(self.t)
 
+        if col == self.get_table_col_index('sp_no','paper_view_table'):
+            sp_no = self.get_table_by_name('paper_view_table').get_cell_text((row,col))
+            sp_data = self.model.select_table_with_wheres('sp',[f"`auto_sp_no` = '{sp_no}'"])[0]
+            self.view.get_sp_viewer(sp_data)
+            # self.view.dialogs['ip_viewer'].widgets["ip_viewer_submit"].clicked.connect(lambda: self.ip_viewer_update_ip(ip_data['sys_id']))
+            # self.view.dialogs['ip_viewer'].widgets["ip_viewer_image_export"].clicked.connect(self.t)
+            # self.view.dialogs['ip_viewer'].widgets["ip_viewer_xlsx_export"].clicked.connect(self.t)
+
+
+
+
+
     # [view] ===========================================================================================
     def view_button_mapping(self) -> None:
         self.view.widgets['paper_view_table'].cellClicked.connect(self.on_ip_no_cell_clicked) # ip 뷰어 연결
@@ -49,8 +61,9 @@ class Controller:
         self.db_view_button_mapping()
         # paper_view
         self.view.widgets['paper_view_open'].clicked.connect(self.set_paper_view_table_first_contents)
-        self.view.widgets['paper_view_select_submit'].clicked.connect(self.do_ip_for_selected_item_order)
-        self.view.widgets['paper_view_all_submit'].clicked.connect(self.do_ip_for_all_item_order)
+        self.view.widgets['paper_view_ip_select_submit'].clicked.connect(self.do_ip_for_selected_item_order)
+        self.view.widgets['paper_view_ip_all_submit'].clicked.connect(self.do_ip_for_all_item_order)
+        self.view.widgets['paper_view_sp_select_submit'].clicked.connect(self.do_sp_for_selected_item_order)
     
     def db_view_button_mapping(self) -> None:
         self.view.widgets['db_view_open'].clicked.connect(self.set_db_view_table_name_combo_box)
@@ -155,28 +168,40 @@ class Controller:
         self.view.show_table(table_contents)
 
     # [view.paper_view] -------------------------------------------------------------------------------------------
-    def set_paper_view_table_first_contents(self) -> None:
+    def set_paper_view_table_first_contents(self) -> None: # 생성 페이지 초기화면
         table_name = 'item_order'
         where_str = self.model.get_where_str('sys_ip_id',None)
         table_contents = self.model.select_table_with_wheres(table_name,[where_str])
         self.view.show_table(table_contents,'paper_view_table')
 
-    def do_ip_for_selected_item_order(self):
+    def do_ip_for_selected_item_order(self): # ip 생성함수 호출
         rows_datas = self.get_table_selected_rows_datas('paper_view_table')
         self.model.make_and_insert_new_ips(rows_datas)
         self.set_paper_view_table_new_ips()
 
-    def do_ip_for_all_item_order(self):
+    def do_ip_for_all_item_order(self): # ip 생성함수 호출
         rows_datas = self.get_table_all_rows_datas('paper_view_table')
         self.model.make_and_insert_new_ips(rows_datas)
         self.set_paper_view_table_new_ips()
 
-    def set_paper_view_table_new_ips(self):
-        table_contents = self.model.select_table_current_1mins('item_order')
+    def do_sp_for_selected_item_order(self): # sp 생성함수 호출
+        rows_datas = self.get_table_selected_rows_datas('paper_view_table')
+        self.model.make_and_insert_new_sps(rows_datas)
+        # 작업현황으로 이동
+
+    def do_sp_for_all_item_order(self): # sp 생성함수 호출
+        rows_datas = self.get_table_all_rows_datas('paper_view_table')
+        self.model.make_and_insert_new_sps(rows_datas)
+        # 작업현황으로 이동
+
+    def set_paper_view_table_new_ips(self): # sp없는 수주 표시
+        table_name = 'item_order'
+        where_str = self.model.get_where_str('sys_sp_id',None)
+        table_contents = self.model.select_table_with_wheres(table_name,[where_str])
         self.view.show_table(table_contents,'paper_view_table')
         # self.view.widgets['paper_view_table'].cellClicked.connect(self.on_ip_no_cell_clicked) # ip 뷰어 연결
 
-    def ip_viewer_update_ip(self,sys_id):
+    def ip_viewer_update_ip(self,sys_id): #ip뷰어 수정내용 저장
         ip_data = self.view.dialogs['ip_viewer'].widgets["ip_viewer_table"].get_labeled_data()
         ip_data['sys_id'] =  sys_id
         self.model.update_table_and_select_updated('ip',[ip_data])
@@ -186,6 +211,7 @@ class Controller:
 
 if __name__ == "__main__":
     app = QApplication([])
+    # app.setStyleSheet('*{font-family: Arial;font-size: 12pt;}')
     ctrl = Controller()
     ctrl.view.show()
     app.exec_()

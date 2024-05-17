@@ -3,6 +3,7 @@ if __debug__:
     sys.path.append(r"D:\Github\OfficeAutomationSystem")
 from src.module.table_plus_widget import *
 from src.test.python.ip_view.ip_view import IPViewer
+from src.test.python.ip_view.sp_view import SPViewer
 
 class WindowBuilder():
     def __init__(self):
@@ -226,10 +227,14 @@ class View(QMainWindow):
     def get_paper_view_widget(self): 
         t = QHBoxLayout()
         t.setAlignment(Qt.AlignLeft)
-        self.widgets['paper_view_select_submit'] = self.wb.get_button("선택 생성")
-        self.widgets['paper_view_all_submit'] = self.wb.get_button("전체 생성")
-        t.addWidget(self.widgets['paper_view_select_submit'] )
-        t.addWidget(self.widgets['paper_view_all_submit'] )
+        self.widgets['paper_view_ip_select_submit'] = self.wb.get_button("IP 선택 생성")
+        self.widgets['paper_view_ip_all_submit'] = self.wb.get_button("IP 전체 생성")
+        self.widgets['paper_view_sp_select_submit'] = self.wb.get_button("SP 선택 생성")
+        self.widgets['paper_view_sp_all_submit'] = self.wb.get_button("SP 전체 생성")
+        t.addWidget(self.widgets['paper_view_ip_select_submit'] )
+        t.addWidget(self.widgets['paper_view_ip_all_submit'] )
+        t.addWidget(self.widgets['paper_view_sp_select_submit'] )
+        t.addWidget(self.widgets['paper_view_sp_all_submit'] )
         # self.layouts['db_view_table_select'] = t
         # --------------------------
         top_layout = QHBoxLayout()
@@ -290,7 +295,11 @@ class View(QMainWindow):
         dialog = IPViewer(self,ip_data)
         dialog.show()
         self.dialogs["ip_viewer"] = dialog
-
+    # -------------------------------------------------------------------------------------------
+    def get_sp_viewer(self,sp_data):
+        dialog = SPViewer(self,sp_data)
+        dialog.show()
+        self.dialogs["sp_viewer"] = dialog
 # ===========================================================================================
 
 

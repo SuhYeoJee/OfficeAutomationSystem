@@ -1,0 +1,7 @@
+
+# ===========================================================================================
+seg_no2
+diamixing_zinc_check
+diamixing_zinc_amount
+diamixing_paraffin_check
+diamixing_paraffin_amount

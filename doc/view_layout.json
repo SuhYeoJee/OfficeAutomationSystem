@@ -24,8 +24,10 @@
             [
                 "paper_view_open",
                 "paper_view_table",
-                "paper_view_select_submit",
-                "paper_view_all_submit"
+                "paper_view_ip_select_submit",
+                "paper_view_ip_all_submit",
+                "paper_view_sp_select_submit",
+                "paper_view_sp_all_submit"
            
             ]
         ],
@@ -55,7 +57,8 @@
         "dialogs":
         [
             "db_view_insert",
-            "ip_viewer"
+            "ip_viewer",
+            "sp_viewer"
         ]
     },
     "IPViewer":
