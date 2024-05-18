@@ -28,7 +28,11 @@
                 "paper_view_ip_all_submit",
                 "paper_view_sp_select_submit",
                 "paper_view_sp_all_submit"
-           
+            ],
+            "work_view",
+            [
+                "work_view_open",
+                "work_view_table"
             ]
         ],
 
@@ -46,11 +50,10 @@
                 "db_view_table_view"
             ],
             [
-                "",
-                [
-
-                ],
                 "paper_view_table_view"
+            ],
+            [
+                "work_view_table_view"
             ]
 
         ],
@@ -70,5 +73,40 @@
             "ip_viewer_image_export",
             "ip_viewer_xlsx_export"     
         ]
-    }
+    },
+    "SPViewer":
+    {
+        "widgets":
+        [
+            "sp_viewer_table",
+            "sp_viewer_submit",
+            "sp_viewer_image_export",
+            "sp_viewer_xlsx_export",
+            "workload",
+            "sp_viewer_workload_submit",
+            "weight_volume",
+            "weight_abs_density",
+            "weight_rel_density",
+            "weight_loss",
+            "weight_weight",
+            "sp_viewer_weight_submit",
+            "density_theo_density1",
+            "density_theo_density2",
+            "density_final_density",
+            "density_final_rel_density",
+            "veri_weight",
+            "veri_count",
+            "dia_volume",
+            "dia_volume_rate",
+            "dia_weight",
+            "bond_volume",
+            "bond_volume_rate",
+            "bond_weight",
+            "total_volume",
+            "total_volume_rate",
+            "total_weight",
+            "dosing_diamix",
+            "sp_viewer_diamix_submit"
+        ]
+    }    
 }

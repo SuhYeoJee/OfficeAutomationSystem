@@ -74,7 +74,7 @@ class SPModel:
     def get_workload(self,sp_data:dict)->dict:
         dosing_diamix = float(sp_data['dosing_diamix'])
         dia_weight = float(sp_data['dia_weight'])
-        workload = float(sp_data.get('amount_work',0)) # 최소 작업량입력한 경우
+        workload = float(sp_data.get('workload',0)) # 최소 작업량입력한 경우
         workload = workload if workload else float(sp_data.get('amount_net',0))
         # --------------------------
         diamixing_bondmix_amount = workload * (dosing_diamix - dia_weight)
@@ -133,6 +133,7 @@ class SPModel:
             return float(ratio) * powdermixing_bond_amount / 100
 
         result = {}
+        sp_data = {k: v for k, v in sp_data.items() if v != ''}
         for idx in range(1,7):
             ratio = float(sp_data.get(f'powdermixing_powder{idx}_ratio',0))
             if ratio:
@@ -256,7 +257,28 @@ class SPModel:
             new_sps.append(new_sp)
         return new_sps
     
-    
+    def sp_viewer_weight_update(self,sp_data):
+        sp_data.update(self.get_workload(sp_data))
+        sp_data.update({'weight_weight':self.get_weight_weight(sp_data)})
+        sp_data.update(self.get_segment_config(sp_data))
+        sp_data.update(self.get_segment_density(sp_data))
+        sp_data.update(self.get_workload(sp_data))
+        sp_data.update(self.get_dia_amounts(sp_data))
+        sp_data.update(self.get_verification(sp_data))
+        sp_data.update(self.get_powder_amounts(sp_data))
+        return sp_data
+
+    def sp_viewer_workload_update(self,sp_data)->dict:
+        sp_data.update(self.get_workload(sp_data))
+        sp_data.update(self.get_dia_amounts(sp_data))
+        sp_data.update(self.get_verification(sp_data))
+        sp_data.update(self.get_powder_amounts(sp_data))
+        return sp_data
+
+
+    def sp_viewer_dosing_diamix_update(self,sp_data):
+        return self.sp_viewer_workload_update(sp_data)
+
 
 # ===========================================================================================
 class Model(SPModel):

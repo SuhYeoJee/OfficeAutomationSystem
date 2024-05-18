@@ -31,40 +31,67 @@ class Controller:
 
     def t(self):
         print('t')
-    
 
-    def on_ip_no_cell_clicked(self, row, col):
-        if col == self.get_table_col_index('ip_no','paper_view_table'):
-            ip_no = self.get_table_by_name('paper_view_table').get_cell_text((row,col))
+
+    def sp_viewer_do_workload_update(self):
+        sp_data = self.sp_viewer_get_sp_data() #현재 입력값 가져오기
+        asp_data = self.model.sp_viewer_workload_update(sp_data)
+        self.view.dialogs['sp_viewer'].set_sp_view_data(asp_data) # sp view 갱신
+
+    def sp_viewer_do_weight_update(self):
+        sp_data = self.sp_viewer_get_sp_data() #현재 입력값 가져오기
+        asp_data = self.model.sp_viewer_weight_update(sp_data)
+        self.view.dialogs['sp_viewer'].set_sp_view_data(asp_data) # sp view 갱신
+
+    def sp_viewer_do_dosing_diamix_update(self):
+        sp_data = self.sp_viewer_get_sp_data() #현재 입력값 가져오기
+        asp_data = self.model.sp_viewer_dosing_diamix_update(sp_data)
+        self.view.dialogs['sp_viewer'].set_sp_view_data(asp_data) # sp view 갱신
+
+    def on_ip_no_cell_clicked(self, row, col, table_name):
+        if col == self.get_table_col_index('ip_no',table_name):
+            ip_no = self.get_table_by_name(table_name).get_cell_text((row,col))
             ip_data = self.model.select_table_with_wheres('ip',[f"`auto_ip_no` = '{ip_no}'"])[0]
             self.view.get_ip_viewer(ip_data)
             self.view.dialogs['ip_viewer'].widgets["ip_viewer_submit"].clicked.connect(lambda: self.ip_viewer_update_ip(ip_data['sys_id']))
             self.view.dialogs['ip_viewer'].widgets["ip_viewer_image_export"].clicked.connect(self.t)
             self.view.dialogs['ip_viewer'].widgets["ip_viewer_xlsx_export"].clicked.connect(self.t)
 
-        if col == self.get_table_col_index('sp_no','paper_view_table'):
-            sp_no = self.get_table_by_name('paper_view_table').get_cell_text((row,col))
+        if col == self.get_table_col_index('sp_no',table_name): # 이거 함수 분리
+            sp_no = self.get_table_by_name(table_name).get_cell_text((row,col))
             sp_data = self.model.select_table_with_wheres('sp',[f"`auto_sp_no` = '{sp_no}'"])[0]
             self.view.get_sp_viewer(sp_data)
-            # self.view.dialogs['ip_viewer'].widgets["ip_viewer_submit"].clicked.connect(lambda: self.ip_viewer_update_ip(ip_data['sys_id']))
-            # self.view.dialogs['ip_viewer'].widgets["ip_viewer_image_export"].clicked.connect(self.t)
+            self.view.dialogs['sp_viewer'].widgets["sp_viewer_submit"].clicked.connect(lambda: self.sp_viewer_update_sp(sp_data['sys_id']))
+
+            self.dialog_button_mapping()
             # self.view.dialogs['ip_viewer'].widgets["ip_viewer_xlsx_export"].clicked.connect(self.t)
 
+    def set_work_view_table_contents(self):
+        where_str = self.model.get_where_str('shipping_date',None) #납기일 이전 조건 추가 필요
+        table_contents = self.model.select_table_with_wheres('item_order',[where_str])
+        self.view.show_table(table_contents,'work_view_table')
 
-
-
+    def dialog_button_mapping(self)->None:
+        self.view.dialogs['sp_viewer'].widgets["sp_viewer_image_export"].clicked.connect(self.t)        
+        self.view.dialogs['sp_viewer'].widgets["sp_viewer_workload_submit"].clicked.connect(self.sp_viewer_do_workload_update)
+        self.view.dialogs['sp_viewer'].widgets["sp_viewer_weight_submit"].clicked.connect(self.sp_viewer_do_weight_update)
+        self.view.dialogs['sp_viewer'].widgets["sp_viewer_diamix_submit"].clicked.connect(self.sp_viewer_do_dosing_diamix_update)
 
     # [view] ===========================================================================================
     def view_button_mapping(self) -> None:
-        self.view.widgets['paper_view_table'].cellClicked.connect(self.on_ip_no_cell_clicked) # ip 뷰어 연결
-
         self.db_view_button_mapping()
-        # paper_view
+        self.paper_view_button_mapping()
+        self.view.widgets['work_view_table'].cellClicked.connect(lambda row, col: self.on_ip_no_cell_clicked(row, col, "work_view_table"))
+        self.view.widgets['work_view_open'].clicked.connect(self.set_work_view_table_contents)
+    # -------------------------------------------------------------------------------------------
+    def paper_view_button_mapping(self) -> None:
+        self.view.widgets['paper_view_table'].cellClicked.connect(lambda row, col: self.on_ip_no_cell_clicked(row, col, "paper_view_table"))
         self.view.widgets['paper_view_open'].clicked.connect(self.set_paper_view_table_first_contents)
         self.view.widgets['paper_view_ip_select_submit'].clicked.connect(self.do_ip_for_selected_item_order)
         self.view.widgets['paper_view_ip_all_submit'].clicked.connect(self.do_ip_for_all_item_order)
         self.view.widgets['paper_view_sp_select_submit'].clicked.connect(self.do_sp_for_selected_item_order)
-    
+        self.view.widgets['paper_view_sp_all_submit'].clicked.connect(self.do_sp_for_all_item_order)
+    # -------------------------------------------------------------------------------------------
     def db_view_button_mapping(self) -> None:
         self.view.widgets['db_view_open'].clicked.connect(self.set_db_view_table_name_combo_box)
         self.view.widgets["db_view_table_names_submit"].clicked.connect(self.set_db_view_table_col_combo_box)
@@ -170,7 +197,7 @@ class Controller:
     # [view.paper_view] -------------------------------------------------------------------------------------------
     def set_paper_view_table_first_contents(self) -> None: # 생성 페이지 초기화면
         table_name = 'item_order'
-        where_str = self.model.get_where_str('sys_ip_id',None)
+        where_str = self.model.get_where_str('sys_sp_id',None)
         table_contents = self.model.select_table_with_wheres(table_name,[where_str])
         self.view.show_table(table_contents,'paper_view_table')
 
@@ -187,12 +214,14 @@ class Controller:
     def do_sp_for_selected_item_order(self): # sp 생성함수 호출
         rows_datas = self.get_table_selected_rows_datas('paper_view_table')
         self.model.make_and_insert_new_sps(rows_datas)
-        # 작업현황으로 이동
-
+        self.set_work_view_table_contents() # 작업현황으로 이동
+        self.view.show_this_view('work_view')
+        
     def do_sp_for_all_item_order(self): # sp 생성함수 호출
         rows_datas = self.get_table_all_rows_datas('paper_view_table')
         self.model.make_and_insert_new_sps(rows_datas)
-        # 작업현황으로 이동
+        self.set_work_view_table_contents() # 작업현황으로 이동
+        self.view.show_this_view('work_view')
 
     def set_paper_view_table_new_ips(self): # sp없는 수주 표시
         table_name = 'item_order'
@@ -206,12 +235,22 @@ class Controller:
         ip_data['sys_id'] =  sys_id
         self.model.update_table_and_select_updated('ip',[ip_data])
 
+    def sp_viewer_get_sp_data(self)->dict: #sp뷰어 내용 전부 가져오기
+        sp_data = self.view.dialogs['sp_viewer'].widgets["sp_viewer_table"].get_labeled_data()
+        side_data = self.view.dialogs['sp_viewer'].get_sp_side_data() # 사이드 레이아웃 가져오기
+        sp_data.update(side_data)
+        return sp_data
+
+    def sp_viewer_update_sp(self,sys_id): #sp뷰어 수정내용 저장
+        sp_data = self.sp_viewer_get_sp_data()
+        sp_data['sys_id'] =  sys_id
+        self.model.update_table_and_select_updated('sp',[sp_data])
 
 # ===========================================================================================
 
 if __name__ == "__main__":
     app = QApplication([])
-    # app.setStyleSheet('*{font-family: Arial;font-size: 12pt;}')
+    app.setStyleSheet('*{font-family: Arial;font-size: 12pt;}')
     ctrl = Controller()
     ctrl.view.show()
     app.exec_()

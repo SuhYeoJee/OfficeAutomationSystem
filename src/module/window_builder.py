@@ -17,6 +17,12 @@ class WindowBuilder():
         vline.setFrameShadow(QFrame.Sunken)
         return vline
 
+    def get_hline_widget(self):
+        hline = QFrame()
+        hline.setFrameShape(QFrame.HLine)
+        hline.setFrameShadow(QFrame.Sunken)
+        return hline
+
     def get_box_frame_widget(self,layout):
         frame = QFrame()
         frame.setFrameShape(QFrame.Box)
@@ -42,13 +48,15 @@ class WindowBuilder():
         lineEdit.setFixedWidth(size) 
         return lineEdit
     
-    def get_label_and_line_edit_layout(self, label_text,dialog_widgets={}):
+    def get_label_and_line_edit_layout(self, label_text,dialog_widgets={}, key:str='')->QHBoxLayout:
         layout = QHBoxLayout()
         layout.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         # --------------------------
         line_edit = QLineEdit()
         line_edit.setFixedWidth(100) 
-        dialog_widgets[label_text] = line_edit
+        if not key:
+            key = label_text
+        dialog_widgets[key] = line_edit
         # --------------------------
         layout.addStretch(1)
         [layout.addWidget(x) for x in [QLabel(label_text), line_edit]]

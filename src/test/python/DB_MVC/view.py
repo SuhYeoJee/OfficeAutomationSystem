@@ -1,65 +1,11 @@
 if __debug__:
     import sys
     sys.path.append(r"D:\Github\OfficeAutomationSystem")
-from src.module.table_plus_widget import *
+from src.module.pyqt_imports import *
+from src.module.table_plus_widget import TablePlusWidget
+from src.module.window_builder import WindowBuilder
 from src.test.python.ip_view.ip_view import IPViewer
 from src.test.python.ip_view.sp_view import SPViewer
-
-class WindowBuilder():
-    def __init__(self):
-        ...
-
-    def get_button(self,button_text:str = None, clicked_func = lambda: None, *args):
-        button = QPushButton(button_text)
-        button.clicked.connect(lambda: clicked_func(*args))
-        return button
-    
-    def get_label(self,label_text:str):
-        return QLabel(label_text)
-
-    def get_vline_widget(self):
-        vline = QFrame()
-        vline.setFrameShape(QFrame.VLine)
-        vline.setFrameShadow(QFrame.Sunken)
-        return vline
-
-    def get_box_frame_widget(self,layout):
-        frame = QFrame()
-        frame.setFrameShape(QFrame.Box)
-        frame.setLayout(layout)
-        frame.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        return frame
-    
-    def get_box_frame_layout(self,layout):
-        # 용례 : widget.setLayout(self.wb.get_box_frame_layout(layout))
-        framed_layout = QHBoxLayout()
-        framed_layout.addWidget(self.get_box_frame_widget(layout))
-        return framed_layout
-
-    def get_combo_box_widget(self, items, combo_func=lambda: None):
-        combo_box = QComboBox()
-        combo_box.addItems(items)
-        combo_box.currentIndexChanged.connect(combo_func)
-        # combo_box.setStyleSheet("QComboBox { text-align: center; }")
-        return combo_box
-
-    def get_line_edit_widget(self, size=100):
-        lineEdit = QLineEdit()
-        lineEdit.setFixedWidth(size) 
-        return lineEdit
-    
-    def get_label_and_line_edit_layout(self, label_text,dialog_widgets={}):
-        layout = QHBoxLayout()
-        layout.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        # --------------------------
-        line_edit = QLineEdit()
-        line_edit.setFixedWidth(100) 
-        dialog_widgets[label_text] = line_edit
-        # --------------------------
-        layout.addStretch(1)
-        [layout.addWidget(x) for x in [QLabel(label_text), line_edit]]
-        return layout
-
 class View(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -94,8 +40,9 @@ class View(QMainWindow):
         layout = QHBoxLayout()
         self.widgets['db_view_open'] = self.wb.get_button("DB 관리", self.show_this_view, 'db_view')
         self.widgets['paper_view_open'] = self.wb.get_button("작업지시서 생성", self.show_this_view, 'paper_view')
+        self.widgets['work_view_open'] = self.wb.get_button("작업 현황 보기", self.show_this_view, 'work_view')
         layout.addWidget(self.wb.get_button("수주 현황 보기", self.show_this_view, 'order_view'))
-        layout.addWidget(self.wb.get_button("작업 현황 보기", self.show_this_view, 'work_view'))
+        layout.addWidget(self.widgets['work_view_open'])
         layout.addWidget(self.widgets['paper_view_open'])
         layout.addWidget(self.widgets['db_view_open'])
         return layout
@@ -225,21 +172,21 @@ class View(QMainWindow):
         self.dialogs["db_view_insert"].show()
     # ===========================================================================================
     def get_paper_view_widget(self): 
-        t = QHBoxLayout()
-        t.setAlignment(Qt.AlignLeft)
+        top_button_layout = QHBoxLayout()
+        top_button_layout.setAlignment(Qt.AlignLeft)
         self.widgets['paper_view_ip_select_submit'] = self.wb.get_button("IP 선택 생성")
         self.widgets['paper_view_ip_all_submit'] = self.wb.get_button("IP 전체 생성")
         self.widgets['paper_view_sp_select_submit'] = self.wb.get_button("SP 선택 생성")
         self.widgets['paper_view_sp_all_submit'] = self.wb.get_button("SP 전체 생성")
-        t.addWidget(self.widgets['paper_view_ip_select_submit'] )
-        t.addWidget(self.widgets['paper_view_ip_all_submit'] )
-        t.addWidget(self.widgets['paper_view_sp_select_submit'] )
-        t.addWidget(self.widgets['paper_view_sp_all_submit'] )
-        # self.layouts['db_view_table_select'] = t
+        top_button_layout.addWidget(self.widgets['paper_view_ip_select_submit'] )
+        top_button_layout.addWidget(self.widgets['paper_view_ip_all_submit'] )
+        top_button_layout.addWidget(self.widgets['paper_view_sp_select_submit'] )
+        top_button_layout.addWidget(self.widgets['paper_view_sp_all_submit'] )
+        # self.layouts['db_view_table_select'] = top_button_layout
         # --------------------------
         top_layout = QHBoxLayout()
         top_layout.addStretch(2)
-        top_layout.addLayout(t)
+        top_layout.addLayout(top_button_layout)
         # self.layouts['db_view_table_top'] = top_layout
         # --------------------------
         self.layouts['paper_view_table_view'] = QVBoxLayout()
@@ -257,14 +204,14 @@ class View(QMainWindow):
         return widget
     # ===========================================================================================
     def get_temp_view_widget(self): 
-        t = QHBoxLayout()
-        t.setAlignment(Qt.AlignLeft)
-        t.addWidget(self.wb.get_button("확인"))
-        # self.layouts['db_view_table_select'] = t
+        top_button_layout = QHBoxLayout()
+        top_button_layout.setAlignment(Qt.AlignLeft)
+        top_button_layout.addWidget(self.wb.get_button("확인"))
+        # self.layouts['db_view_table_select'] = top_button_layout
         # --------------------------
         top_layout = QHBoxLayout()
         top_layout.addStretch(2)
-        top_layout.addLayout(t)
+        top_layout.addLayout(top_button_layout)
         # self.layouts['db_view_table_top'] = top_layout
         # --------------------------
         self.layouts['paper_view_table_view'] = QVBoxLayout()
@@ -281,14 +228,38 @@ class View(QMainWindow):
         # --------------------------
         return widget
     # ===========================================================================================    
+    def get_work_view_widget(self): 
+        top_button_layout = QHBoxLayout()
+        top_button_layout.setAlignment(Qt.AlignLeft)
+        self.widgets['work_view_ip_select_submit'] = self.wb.get_button("출고일 등록")
+        top_button_layout.addWidget(self.widgets['work_view_ip_select_submit'] )        
+        # --------------------------
+        top_layout = QHBoxLayout()
+        top_layout.addStretch(2)
+        top_layout.addLayout(top_button_layout)
+        # self.layouts['db_view_table_top'] = top_layout
+        # --------------------------
+        self.layouts['work_view_table_view'] = QVBoxLayout()
+        self.widgets['work_view_table'] = TablePlusWidget()
+        self.layouts['work_view_table_view'].addWidget(self.widgets['work_view_table'])
+        self.show_table([{'1':'aa','2':'ba'},{'1':'ㄱa','2':'ㄴa'}],'work_view_table')
+        # --------------------------
+        layout = QVBoxLayout()
+        layout.addLayout(top_layout)
+        layout.addLayout(self.layouts['work_view_table_view'])
+        # --------------------------        
+        widget = QWidget()
+        widget.setLayout(self.wb.get_box_frame_layout(layout))
+        # --------------------------
+        return widget
+    # ===========================================================================================
     def get_temp_widget(self):
         widget = QWidget()
         layout = QHBoxLayout()
         layout.addWidget(QLabel("temp_view"))
         widget.setLayout(self.wb.get_box_frame_layout(layout))
         return widget
-    # def get_paper_view_widget(self): return self.get_temp_widget()
-    def get_work_view_widget(self): return self.get_temp_widget()
+    # -------------------------------------------------------------------------------------------
     def get_order_view_widget(self): return self.get_temp_widget()
     # ===========================================================================================
     def get_ip_viewer(self,ip_data):
