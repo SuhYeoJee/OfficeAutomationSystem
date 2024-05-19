@@ -1,0 +1,89 @@
+{
+    "temp": {
+        "sys": [
+            "sys_id",
+            "sys_reg_date",
+            "sys_update_date",
+            "sys_description"
+        ],
+        "auto": [
+
+        ]
+    },
+
+    "bond": {
+        "sys": [
+            "sys_id",
+            "sys_reg_date",
+            "sys_update_date",
+            "sys_description"
+        ],
+        "auto": [
+
+        ]
+    },
+
+    "customer": {
+        "sys": [
+            "sys_id",
+            "sys_reg_date",
+            "sys_update_date",
+            "sys_description"
+        ],
+        "auto": [
+
+        ]
+    },
+
+    "item_order": {
+        "kor": {
+            "customer_name" : "수주처",
+            "order_date" : "수주일",
+            "order_no" : "수주 번호",
+            "order_customer_no" : "수주처 번호",
+            "order_item_no" : "일련 번호",
+            "item_group_name" : "제품 그룹",
+            "item_name" : "제품명",
+            "item_amount" : "주문 수량",
+            "engrave" : "각인",
+            "ip_no" : "IP",
+            "sp_no" : "SP",
+            "seg_no" : "세그먼트 번호",
+            "seg_name" : "세그먼트 품명",
+            "bond_name" : "본드",
+            "seg_amount_net" : "세그먼트 소요량",
+            "seg_amount_work" : "세그먼트 작업 수량",
+            "color" : "색상",
+            "due_date" : "납기일",
+            "shipping_date" : "출고일"
+        },
+        "sys": [
+            "sys_id",
+            "sys_reg_date",
+            "sys_update_date",
+            "sys_description",
+            "sys_customer_id",
+            "sys_item_id",
+            "sys_ip_id",
+            "sys_sp_id",
+            "sys_seg_id",
+            "sys_bond_id"
+        ],
+        "auto": [
+            "order_no",
+            "order_customer_no",
+            "order_item_no",
+            "item_group_name",
+            "ip_no",
+            "sp_no",
+            "seg_no",
+            "seg_name",
+            "bond_name",
+            "seg_amount_net",
+            "seg_amount_work"
+        ],
+        "except_insert": [
+            "shipping_date"
+        ]
+    }
+}

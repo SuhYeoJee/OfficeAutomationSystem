@@ -139,13 +139,13 @@ class View(QMainWindow):
         # -------------------------------------------------------------------------------------------
         return widget
     # -------------------------------------------------------------------------------------------
-    def get_db_view_insert_dialog(self, table_cols = []):
+    def get_db_view_insert_dialog(self, table_cols:dict = {}):
         first_half_layout = QVBoxLayout()
         second_half_layout = QVBoxLayout()
 
-        table_cols = [col for col in table_cols if 'sys_' not in col]
-        mid_idx = (len(table_cols) + 1) // 2
-        first_half, second_half = table_cols[:mid_idx], table_cols[mid_idx:]
+        kor_table_cols = list(table_cols.values())
+        mid_idx = (len(kor_table_cols) + 1) // 2
+        first_half, second_half = kor_table_cols[:mid_idx], kor_table_cols[mid_idx:]
 
         self.dialog_widgets = {}
 
@@ -202,31 +202,6 @@ class View(QMainWindow):
         widget.setLayout(self.wb.get_box_frame_layout(layout))
         # --------------------------
         return widget
-    # ===========================================================================================
-    def get_temp_view_widget(self): 
-        top_button_layout = QHBoxLayout()
-        top_button_layout.setAlignment(Qt.AlignLeft)
-        top_button_layout.addWidget(self.wb.get_button("확인"))
-        # self.layouts['db_view_table_select'] = top_button_layout
-        # --------------------------
-        top_layout = QHBoxLayout()
-        top_layout.addStretch(2)
-        top_layout.addLayout(top_button_layout)
-        # self.layouts['db_view_table_top'] = top_layout
-        # --------------------------
-        self.layouts['paper_view_table_view'] = QVBoxLayout()
-        self.widgets['paper_view_table'] = TablePlusWidget()
-        self.layouts['paper_view_table_view'].addWidget(self.widgets['paper_view_table'])
-        self.show_table([{'1':'aa','2':'ba'},{'1':'ㄱa','2':'ㄴa'}],'paper_view_table')
-        # --------------------------
-        layout = QVBoxLayout()
-        layout.addLayout(top_layout)
-        layout.addLayout(self.layouts['paper_view_table_view'])
-        # --------------------------        
-        widget = QWidget()
-        widget.setLayout(self.wb.get_box_frame_layout(layout))
-        # --------------------------
-        return widget
     # ===========================================================================================    
     def get_work_view_widget(self): 
         top_button_layout = QHBoxLayout()
@@ -252,15 +227,32 @@ class View(QMainWindow):
         widget.setLayout(self.wb.get_box_frame_layout(layout))
         # --------------------------
         return widget
-    # ===========================================================================================
-    def get_temp_widget(self):
-        widget = QWidget()
-        layout = QHBoxLayout()
-        layout.addWidget(QLabel("temp_view"))
-        widget.setLayout(self.wb.get_box_frame_layout(layout))
-        return widget
+
     # -------------------------------------------------------------------------------------------
-    def get_order_view_widget(self): return self.get_temp_widget()
+    def get_order_view_widget(self): 
+        top_button_layout = QHBoxLayout()
+        top_button_layout.setAlignment(Qt.AlignLeft)
+        top_button_layout.addWidget(self.wb.get_button("확인"))
+        # self.layouts['db_view_table_select'] = top_button_layout
+        # --------------------------
+        top_layout = QHBoxLayout()
+        top_layout.addStretch(2)
+        top_layout.addLayout(top_button_layout)
+        # self.layouts['db_view_table_top'] = top_layout
+        # --------------------------
+        self.layouts['order_view_table_view'] = QVBoxLayout()
+        self.widgets['order_view_table'] = TablePlusWidget()
+        self.layouts['order_view_table_view'].addWidget(self.widgets['order_view_table'])
+        self.show_table([{'1':'aa','2':'ba'},{'1':'ㄱa','2':'ㄴa'}],'order_view_table')
+        # --------------------------
+        layout = QVBoxLayout()
+        layout.addLayout(top_layout)
+        layout.addLayout(self.layouts['order_view_table_view'])
+        # --------------------------        
+        widget = QWidget()
+        widget.setLayout(self.wb.get_box_frame_layout(layout))
+        # --------------------------
+        return widget    
     # ===========================================================================================
     def get_ip_viewer(self,ip_data):
         dialog = IPViewer(self,ip_data)
@@ -272,7 +264,38 @@ class View(QMainWindow):
         dialog.show()
         self.dialogs["sp_viewer"] = dialog
 # ===========================================================================================
-
+    def get_temp_widget(self):
+        widget = QWidget()
+        layout = QHBoxLayout()
+        layout.addWidget(QLabel("temp_view"))
+        widget.setLayout(self.wb.get_box_frame_layout(layout))
+        return widget
+    # -------------------------------------------------------------------------------------------
+    def get_temp_view_widget(self): 
+        top_button_layout = QHBoxLayout()
+        top_button_layout.setAlignment(Qt.AlignLeft)
+        top_button_layout.addWidget(self.wb.get_button("확인"))
+        # self.layouts['db_view_table_select'] = top_button_layout
+        # --------------------------
+        top_layout = QHBoxLayout()
+        top_layout.addStretch(2)
+        top_layout.addLayout(top_button_layout)
+        # self.layouts['db_view_table_top'] = top_layout
+        # --------------------------
+        self.layouts['paper_view_table_view'] = QVBoxLayout()
+        self.widgets['paper_view_table'] = TablePlusWidget()
+        self.layouts['paper_view_table_view'].addWidget(self.widgets['paper_view_table'])
+        self.show_table([{'1':'aa','2':'ba'},{'1':'ㄱa','2':'ㄴa'}],'paper_view_table')
+        # --------------------------
+        layout = QVBoxLayout()
+        layout.addLayout(top_layout)
+        layout.addLayout(self.layouts['paper_view_table_view'])
+        # --------------------------        
+        widget = QWidget()
+        widget.setLayout(self.wb.get_box_frame_layout(layout))
+        # --------------------------
+        return widget    
+    
 
 
 

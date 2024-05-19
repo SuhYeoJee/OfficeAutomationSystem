@@ -161,15 +161,24 @@ class Controller:
 
     def update_and_show_insert_dialog(self):
         table_name = self.get_db_view_table_name()
-        table_cols = self.model.get_table_cols(table_name)
-        self.view.get_db_view_insert_dialog(table_cols)
-        self.view.show_db_view_insert_dialog()
-        self.view.widgets["db_view_insert_submit"].clicked.connect(self.insert_dialog_data)
+        dialog_table_cols = self.model.get_table_cols_by_options(table_name,['except_sys','except_auto','except_insert'])
 
-    def insert_dialog_data(self):
-        table_name = self.get_db_view_table_name()
-        self.view.dialogs['db_view_insert'].close()
-        insert_data = self.get_insert_data_from_dialog()
+        self.view.get_db_view_insert_dialog(dialog_table_cols)
+        self.view.show_db_view_insert_dialog()
+        self.view.widgets["db_view_insert_submit"].clicked.connect(lambda : self.insert_dialog_data(table_name, dialog_table_cols))
+
+    def translate_kor_to_eng_cols(self,cols,datas):
+        result = {}
+        for k, v in datas.items():
+            eng = next((eng for eng, kor in cols.items() if kor == k), None)
+            key = eng if eng else k
+            result[key] = v
+        return result
+
+    def insert_dialog_data(self, table_name, dialog_table_cols):
+        self.view.dialogs['db_view_insert'].close()      
+        insert_data = self.get_insert_data_from_dialog() 
+        insert_data = self.translate_kor_to_eng_cols(dialog_table_cols,insert_data)
         self.db_view_do_table_insert(table_name, insert_data)
 
     # --------------------------

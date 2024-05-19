@@ -1,6 +1,7 @@
 from db_interface import DBInterface
 from igzg.utils import getConfig
 from pprint import pprint
+import json
 
 
 class SPModel:
@@ -279,11 +280,16 @@ class SPModel:
     def sp_viewer_dosing_diamix_update(self,sp_data):
         return self.sp_viewer_workload_update(sp_data)
 
-
 # ===========================================================================================
 class Model(SPModel):
     def __init__(self):
         self.dbi = DBInterface(*getConfig(['username','password','database','port']))
+        self.db_spec = self.get_db_spec()
+
+    def get_db_spec(self):
+        with open("./doc/DB_spec.json", 'r', encoding='utf-8') as file:
+            data = json.load(file)
+        return data 
 
     def make_and_insert_new_sps(self, rows_datas):
         def get_sp_raw_datas():
@@ -443,6 +449,27 @@ class Model(SPModel):
     def get_table_cols(self, table_name):
         cols_raw = self.dbi.execute_query(f"SHOW COLUMNS FROM {table_name};")
         return self.fatchall_data_to_list(cols_raw)
+    
+
+    def get_table_cols_by_options(self,table_name,options=["except_sys"]):
+        table_cols = self.get_table_cols(table_name)
+        table_options = self.db_spec.get(table_name,{})
+
+        if "except_sys" in options:
+            table_cols = [x for x in table_cols if x not in table_options.get("sys",[])]
+        if "except_auto" in options:
+            table_cols = [x for x in table_cols if x not in table_options.get("auto",[])]
+        if "except_insert" in options:
+            table_cols = [x for x in table_cols if x not in table_options.get("except_insert",[])]
+        
+        result = {}
+        for c in table_cols:
+            kor_c = table_options['kor'].get(c,'')
+            kor_c = kor_c if kor_c else c
+            result[c] = kor_c
+        
+        return result
+    
     # [select] ===========================================================================================
     def select_table_all(self,table_name):
         table_cols = self.get_table_cols(table_name)
