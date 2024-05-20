@@ -148,10 +148,10 @@ class IpViewTable(TablePlusWidget):
     # db col name 과 cell position 정보 매핑
     def get_pos_data(self)->dict:
         return {
-            "auto_ip_no1" :     (4,2),  # 제조지시 NO. 1
-            "auto_ip_no2" :     (4,3),  # 제조지시 NO. 2
-            "auto_ip_no3" :     (6,2),  # 제조지시 NO. 3
-            "auto_date" :            (4,7),  # 작성일
+            "ip_no1" :     (4,2),  # 제조지시 NO. 1
+            "ip_no2" :     (4,3),  # 제조지시 NO. 2
+            "ip_no3" :     (6,2),  # 제조지시 NO. 3
+            "creation_date" :            (4,7),  # 작성일
             "due_date" :         (5,7),  # 출고예정일
             # --------------------------                               
             "item_group_name" :    (8,2),  # 제품명1
@@ -217,7 +217,7 @@ class IpViewTable(TablePlusWidget):
         }    
     # -------------------------------------------------------------------------------------------
     def set_ip_data(self,datas)->None:
-        self.ip_data = datas # {'auto_date': '2024-05-12',}
+        self.ip_data = datas
         result = {self.pos_data[key]: self.ip_data[key] for key in self.pos_data if key in self.ip_data}
         self.fill_datas_position(result)
         self.show()
@@ -266,7 +266,7 @@ class TestWindow(QMainWindow):
         self.setCentralWidget(self.wb.get_button("ip_view",self.open_ip_view))
 
     def open_ip_view(self):
-        dialog = IPViewer(self,{'auto_date':"asdlfialwseijf"})
+        dialog = IPViewer(self,{'creation_date':"asdlfialwseijf"})
         dialog.show()
         from pprint import pprint
         pprint(dialog.get_ip_view_table().get_labeled_data())
@@ -282,7 +282,7 @@ def ipv_test():
 def ipvt_test():
     app = QApplication([])
     i = IpViewTable()
-    i.set_ip_data({'auto_date':"asdlfialwseijf"})
+    i.set_ip_data({'creation_date':"asdlfialwseijf"})
     app.exec_()
 
 if __name__ == "__main__":

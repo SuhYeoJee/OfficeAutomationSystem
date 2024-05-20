@@ -164,7 +164,7 @@ class SPModel:
             # --------------------------
             for item_name, item_amount in sp_datas[ip_no]['item'].items(): # 세그먼트 수량 계산
                 item_datas = sp_raw_datas['item_datas']
-                item_data = next((item for item in item_datas if item.get('name') == item_name), None)
+                item_data = next((item for item in item_datas if item.get('product_name') == item_name), None)
 
                 seg1_no = item_data['seg1_no']
                 seg2_no = item_data['seg2_no']
@@ -186,44 +186,44 @@ class SPModel:
                     new_sp[k] = val
                 # segment DB에서 가져오는 데이터
                 seg_data = next((d for d in sp_raw_datas['seg_datas'] if d.get('seg_no') == seg_no), None)
-                bond_data = next((d for d in sp_raw_datas['bond_datas'] if d.get('name') == seg_data['bond']), None)
+                bond_data = next((d for d in sp_raw_datas['bond_datas'] if d.get('product_name') == seg_data['bond_name']), None)
 
                 # -------------------------------------------------------------------------------------------
                 # DB에서 채우기
                 def get_new_sp_from_data():
                     new_sp['ip_no'] = ip_no
-                    new_sp['seg_no1'] = seg_no
+                    new_sp['seg_no'] = seg_no
                     new_sp['product_name'] = seg_no
                     new_sp['amount_net'] = str(seg_amout)
-                    new_sp['specification_l'] = seg_data['l']
-                    new_sp['specification_t'] = seg_data['t']
-                    new_sp['specification_w'] = seg_data['w']
-                    new_sp['specification_v'] = seg_data['v']
-                    new_sp['weight_volume'] = seg_data['v']
+                    new_sp['specification_l'] = seg_data['specification_l']
+                    new_sp['specification_t'] = seg_data['specification_t']
+                    new_sp['specification_w'] = seg_data['specification_w']
+                    new_sp['specification_v'] = seg_data['specification_v']
+                    new_sp['weight_volume'] = seg_data['specification_v']
                     new_sp['specification_model_text'] = seg_data['model_text']
                     new_sp['specification_model_img'] = seg_data['model_img']
-                    new_sp['bond_select'] = seg_data['bond']
-                    new_sp['bond_abs_density'] = bond_data['abs_density']
-                    new_sp['weight_abs_density'] = bond_data['abs_density']
+                    new_sp['bond_select'] = seg_data['bond_name']
+                    new_sp['bond_abs_density'] = bond_data['density']
+                    new_sp['weight_abs_density'] = bond_data['density']
                     new_sp['bond_hardness'] = bond_data['hardness_HRB']
-                    new_sp['diamond_dia1_name'] = seg_data['d1']
-                    new_sp['diamond_dia1_ratio'] = seg_data['d1_rate']
-                    new_sp['diamond_dia2_name'] = seg_data['d2']
-                    new_sp['diamond_dia2_ratio'] = seg_data['d2_rate']
-                    new_sp['diamond_dia3_name'] = seg_data['d3']
-                    new_sp['diamond_dia3_ratio'] = seg_data['d3_rate']
+                    new_sp['diamond_dia1_name'] = seg_data['dia1']
+                    new_sp['diamond_dia1_ratio'] = seg_data['dia1_ratio']
+                    new_sp['diamond_dia2_name'] = seg_data['dia2']
+                    new_sp['diamond_dia2_ratio'] = seg_data['dia2_ratio']
+                    new_sp['diamond_dia3_name'] = seg_data['dia3']
+                    new_sp['diamond_dia3_ratio'] = seg_data['dia3_ratio']
                     new_sp['diamond_concent1'] = seg_data['concent']
                     new_sp['sint_temp'] = bond_data['sint_temp']
                     new_sp['sint_time'] = bond_data.get('sint_time','')
                     new_sp['forming_pressure'] = seg_data['forming_pressure']
                     new_sp['forming_height'] = seg_data['forming_height']
-                    new_sp['diamixing_bondmix_name'] = seg_data['bond']
-                    new_sp['diamixing_dia1_name'] = seg_data['d1']
-                    new_sp['diamixing_dia2_name'] = seg_data['d2']
-                    new_sp['diamixing_dia3_name'] = seg_data['d3']
+                    new_sp['diamixing_bondmix_name'] = seg_data['bond_name']
+                    new_sp['diamixing_dia1_name'] = seg_data['dia1']
+                    new_sp['diamixing_dia2_name'] = seg_data['dia2']
+                    new_sp['diamixing_dia3_name'] = seg_data['dia3']
                     new_sp['diamixing_mixing_time'] = bond_data.get('mixing_time')
                     new_sp['powdermixing_ballmill_time'] = bond_data.get('ballmill_time')
-                    new_sp['powdermixing_bond_name'] = seg_data['bond']
+                    new_sp['powdermixing_bond_name'] = seg_data['bond_name']
 
                     idx = 1
                     for x in [x['chemical_symbol'] for x in sp_raw_datas['powder_datas']]:
@@ -304,7 +304,7 @@ class Model(SPModel):
                 if item_order_data['sys_ip_id']: # ip_no 가져오기
                     where = f"`sys_id` = '{item_order_data['sys_ip_id']}'"
                     [ip_data] = self.select_table_with_wheres('ip',[where])
-                    ip_no = ip_data.get('auto_ip_no','')
+                    ip_no = ip_data.get('ip_no','')
                 else:
                     ip_no = ''
 
@@ -387,14 +387,13 @@ class Model(SPModel):
                     ip_datas[group_name]['data']['shank_memo1'] = item_order_datas['engrave']
                 # --------------------------
                 for item_datas in ip_raw_datas['item_datas']:
-                    item_name = item_datas['name']
+                    item_name = item_datas['product_name']
                     item_amount = ip_datas[group_name]['item'][item_name]
                     seg1_no = item_datas['seg1_no']
                     seg2_no = item_datas['seg2_no']
                     shank_name = item_datas['shank_name']
                     sub1_name = item_datas['sub1_name']
                     sub2_name = item_datas['sub2_name']
-                    # ip_datas[group_name]['data']['auto_ip_no3'] = item_datas['recent_ip']
                     ip_datas[group_name]['data']['shank_memo2'] = item_datas['mark']
                     ip_datas[group_name]['data']['welding1'] = item_datas['welding']
                     ip_datas[group_name]['data']['dressing1'] = item_datas['dressing']
@@ -476,11 +475,20 @@ class Model(SPModel):
         contents_raw = self.dbi.execute_query(f"SELECT * FROM {table_name};")
         return self.fatchall_data_to_dict_list(contents_raw,table_cols)
 
+    def select_table_col_all(self,table_name,col):
+        contents_raw = self.dbi.execute_query(f"SELECT {col} FROM {table_name};")
+        return self.fatchall_data_to_list(contents_raw)
+
+
     def select_table_like_keyword(self,table_name,table_col,keyword):
         keywords = ["'%"+k.strip().replace("'","\'")+"%'" for k in keyword.split(',')]
-        where_str = ' AND '.join([ '`'+ table_col + '` LIKE ' + k for k in keywords])
-        query = f"SELECT * FROM {table_name} WHERE {where_str};"
         table_cols = self.get_table_cols(table_name)
+        if table_col == "all":
+            table_col = f"CONCAT_WS('', {', '.join([f'`{x}`' for x in table_cols])})"
+        else:
+            table_col = f"`{table_col}`"
+        where_str = ' AND '.join([ table_col + ' LIKE ' + k for k in keywords])
+        query = f"SELECT * FROM {table_name} WHERE {where_str};"
         contents_raw = self.dbi.execute_query(query)
         return self.fatchall_data_to_dict_list(contents_raw,table_cols)    
 

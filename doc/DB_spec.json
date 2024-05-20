@@ -1,29 +1,125 @@
 {
-    "temp": {
-        "sys": [
-            "sys_id",
-            "sys_reg_date",
-            "sys_update_date",
-            "sys_description"
-        ],
-        "auto": [
-
-        ]
-    },
-
-    "bond": {
-        "sys": [
-            "sys_id",
-            "sys_reg_date",
-            "sys_update_date",
-            "sys_description"
-        ],
-        "auto": [
-
-        ]
-    },
-
+    "tables":[
+        "customer",
+        "powder",
+        "shank",
+        "submaterial",
+        "diamond",
+        "bond",
+        "segment",
+        "sp",
+        "item",
+        "ip",
+        "item_order"
+    ],
     "customer": {
+        "kor": {
+            "sys_id":"ID",
+            "sys_reg_date":"등록일",
+            "sys_update_date":"수정일",
+            "sys_description":"설명",            
+            "customer_name" : "회사명",
+            "customer_id" : "ID"
+        },
+        "sys": [
+            "sys_id",
+            "sys_reg_date",
+            "sys_update_date",
+            "sys_description"
+        ]
+    },
+    "powder": {
+        "kor": {
+            "sys_id":"ID",
+            "sys_reg_date":"등록일",
+            "sys_update_date":"수정일",
+            "sys_description":"설명",            
+            "chemical_symbol":"화학식",
+            "product_name_en":"영문명",
+            "product_name_ko":"한국명",
+            "specification":"상세",
+            "density":"비중",
+            "price":"단가",
+            "inventory":"재고"
+        },
+        "sys": [
+            "sys_id",
+            "sys_reg_date",
+            "sys_update_date",
+            "sys_description"
+        ]
+    },
+    "shank": {
+        "kor": {
+            "sys_id":"ID",
+            "sys_reg_date":"등록일",
+            "sys_update_date":"수정일",
+            "sys_description":"설명",            
+            "product_name":"품명",
+            "price":"단가",
+            "specification":"상세"
+        },
+        "sys": [
+            "sys_id",
+            "sys_reg_date",
+            "sys_update_date",
+            "sys_description"
+        ],
+        "domain":{
+            "product_name" : ["도서걸즈","격투가","근육인형"],
+            "price" : {"shank":"price"},
+            "specification":{"customer":"sys_id"}
+        }
+    },
+    "submaterial": {
+        "kor": {
+            "sys_id":"ID",
+            "sys_reg_date":"등록일",
+            "sys_update_date":"수정일",
+            "sys_description":"설명",
+            "product_name":"품명",
+            "price":"단가"
+        },
+        "sys": [
+            "sys_id",
+            "sys_reg_date",
+            "sys_update_date",
+            "sys_description"
+        ]
+    },
+    "diamond": {
+        "kor": {
+            "sys_id":"ID",
+            "sys_reg_date":"등록일",
+            "sys_update_date":"수정일",
+            "sys_description":"설명",
+            "product_name":"품명",
+            "price":"단가"
+        },
+        "sys": [
+            "sys_id",
+            "sys_reg_date",
+            "sys_update_date",
+            "sys_description"
+        ]
+    },
+    "bond": {
+        "kor": {
+            "sys_id":"ID",
+            "sys_reg_date":"등록일",
+            "sys_update_date":"수정일",
+            "sys_description":"설명",            
+            "product_name":"본드명",
+            "color":"색상",
+            "density":"밀도",
+            "hardness_HRB":"경도HRB",
+            "price":"단가",
+            "sint_temp":"소결온도(°C)",
+            "sint_time":"소결시간(분)",
+            "ballmill_time":"볼밀시간",
+            "mixing_time":"믹싱시간",
+            "method":"방식"
+        },
         "sys": [
             "sys_id",
             "sys_reg_date",
@@ -31,12 +127,414 @@
             "sys_description"
         ],
         "auto": [
+            "price",
+            "density"
+        ],
+        "trigger": {
+            "before_insert": {
+                "price":"분말별 비율 * 단가 합산",
+                "comment" : "삭제필요, 특수입력기"
+            }
+        }
+    },
+    "segment": {
+        "kor": {
+            "sys_id":"ID",
+            "sys_reg_date":"등록일",
+            "sys_update_date":"수정일",
+            "sys_description":"설명",
+            "sys_bond_id":"본드ID",
+            "sys_dia1_id":"다이아1ID",
+            "sys_dia2_id":"다이아2ID",
+            "sys_dia3_id":"다이아3ID",
+            "seg_no":"SEG No",
+            "product_name":"품명",
+            "alias":"별명",
+            "specification_l":"L",
+            "specification_t":"T",
+            "specification_w":"W",
+            "specification_v":"체적",
+            "bond_name":"본드명",
+            "concent":"집중도",
+            "specification":"상세",
+            "model_text":"모형설명",
+            "model_img":"모형이미지",
+            "forming_pressure":"성형압력(bar)",
+            "forming_height":"성형높이(mm)",
+            "dia1":"DIA1",
+            "dia1_ratio":"DRATE1",
+            "dia2":"DIA2",
+            "dia2_ratio":"DRATE2",
+            "dia3":"DIA3",
+            "dia3_ratio":"DRATE3",
+            "recent_sp":"최근SP"
+        },
+        "sys": [
+            "sys_id",
+            "sys_reg_date",
+            "sys_update_date",
+            "sys_description",
+            "sys_bond_id",
+            "sys_dia1_id",
+            "sys_dia2_id",
+            "sys_dia3_id"
+        ],
+        "auto": [
+            "recent_sp"
+        ],
+        "trigger": {
+            "before_insert": {
+                "sys_col_id":"bond_name,dia1,dia2,dia3"
+            },
+            "before_update": {
+                "sys_col_id":"bond_name,dia1,dia2,dia3"
+            }
+        }
+    },
+    "sp": {
+        "kor": {
+            "sys_id":"ID",
+            "sys_reg_date":"등록일",
+            "sys_update_date":"수정일",
+            "sys_description":"설명",
+            "sys_ip_id":"IPID",
+            "sys_seg_id":"세그먼트ID",
+            "sys_bond_id":"본드ID",
+            "sys_dia1_id":"다이아1ID",
+            "sys_dia2_id":"다이아2ID",
+            "sys_dia3_id":"다이아3ID",
+            "sp_no":"SP NO",
+            "sp_no1":"SP년도",
+            "sp_no2":"SP번호",
+            "sp_no3":"최근SP",
+            "creation_date":"작성일",
+            "seg_no":"SEG No",
+            "product_name":"품명",
+            "amount_net":"NET",
+            "amount_work":"작업량",
+            "specification_l":"L",
+            "specification_t":"T",
+            "specification_w":"W",
+            "specification_v":"부피",
+            "specification_model_text":"모형설명",
+            "specification_model_img":"모형이미지",
+            "bond_select":"본드",
+            "bond_abs_density":"본드밀도",
+            "bond_hardness":"본드경도",
+            "diamond_dia1_name":"다이아1종류",
+            "diamond_dia1_ratio":"다이아1비율",
+            "diamond_dia2_name":"다이아2종류",
+            "diamond_dia2_ratio":"다이아2비율",
+            "diamond_dia3_name":"다이아3종류",
+            "diamond_dia3_ratio":"다이아3비율",
+            "diamond_concent1":"집중도",
+            "diamond_concent2":"집중도(%)",
+            "sint_temp":"소결온도(°C)",
+            "sint_time":"소결시간(분)",
+            "sint_test_theo_density":"소결TEST이론밀도",
+            "sint_test_benchmark":"소결TEST기준(94%)",
+            "forming_pressure":"성형압력(bar)",
+            "forming_height":"성형높이(mm)",
+            "dosing_diamix":"도징다이아믹스",
+            "dosing_bond":"다이아없는본드테스트(g)",
+            "diamixing_bondmix_name":"다이아믹싱본드명",
+            "diamixing_bondmix_amount":"다이아믹싱본드무게(g)",
+            "diamixing_dia1_name":"믹싱다이아1",
+            "diamixing_dia1_amount":"다이아1무게(g)",
+            "diamixing_dia2_name":"믹싱다이아2",
+            "diamixing_dia2_amount":"다이아2무게(g)",
+            "diamixing_dia3_name":"믹싱다이아3",
+            "diamixing_dia3_amount":"다이아3무게(g)",
+            "diamixing_zinc_check":"징크사용",
+            "diamixing_zinc_amount":"징크무게(g)",
+            "diamixing_paraffin_check":"파라핀사용",
+            "diamixing_paraffin_amount":"파라핀무게(g)",
+            "diamixing_mixing_time":"믹싱(시간)",
+            "powdermixing_ballmill_time":"볼밀(시간)",
+            "powdermixing_bond_name":"믹싱본드명",
+            "powdermixing_bond_amount":"본드작업량",
+            "powdermixing_powder1_name":"분말1",
+            "powdermixing_powder1_ratio":"분말1비율",
+            "powdermixing_powder1_amount":"분말1무게",
+            "powdermixing_powder2_name":"분말2",
+            "powdermixing_powder2_ratio":"분말2비율",
+            "powdermixing_powder2_amount":"분말2무게",
+            "powdermixing_powder3_name":"분말3",
+            "powdermixing_powder3_ratio":"분말3비율",
+            "powdermixing_powder3_amount":"분말3무게",
+            "powdermixing_powder4_name":"분말4",
+            "powdermixing_powder4_ratio":"분말4비율",
+            "powdermixing_powder4_amount":"분말4무게",
+            "powdermixing_powder5_name":"분말5",
+            "powdermixing_powder5_ratio":"분말5비율",
+            "powdermixing_powder5_amount":"분말5무게",
+            "powdermixing_powder6_name":"분말6",
+            "powdermixing_powder6_ratio":"분말6비율",
+            "powdermixing_powder6_amount":"분말6무게",
+            "powdermixing_powder_total_ratio":"분말비율총합",
+            "powdermixing_powder_total_amount":"분말무게총합",
+            "memo1":"기타1",
+            "memo2":"기타2",
+            "memo3":"기타3",
+            "memo4":"기타4",
+            "workload":"최소작업량",
+            "weight_volume":"중량계산부피",
+            "weight_abs_density":"중량계산절대밀도",
+            "weight_rel_density":"중량계산상대밀도",
+            "weight_loss":"중량계산LOSS",
+            "weight_weight":"계산중량",
+            "density_theo_density1":"이론밀돕",
+            "density_theo_density2":"이론밀도2",
+            "density_final_density":"최종밀도",
+            "density_final_rel_density":"최종상대밀도",
+            "veri_weight":"무게검산",
+            "veri_count":"수량검산",
+            "dia_volume":"다이아부피",
+            "dia_volume_rate":"다이아부피비",
+            "dia_weight":"다이아무게",
+            "bond_volume":"본드부피",
+            "bond_volume_rate":"본드부피비",
+            "bond_weight":"본드무게",
+            "total_volume":"총부피",
+            "total_volume_rate":"총부피비",
+            "total_weight":"총무게",
+            "checked":"검수여부",
+            "ip_no":"IP NO"
+        },
+        "sys": [
+            "sys_id",
+            "sys_reg_date",
+            "sys_update_date",
+            "sys_description",
+            "sys_ip_id",
+            "sys_seg_id",
+            "sys_bond_id",
+            "sys_dia1_id",
+            "sys_dia2_id",
+            "sys_dia3_id"          
+        ],
+        "auto": [
+            "sp_no",
+            "sp_no1",
+            "sp_no2",
+            "sp_no3",
+            "creation_date"
+        ],
+        "trigger": {
+            "before_insert": {
+                "sys_col_id":"sys_ip_id, sys_seg_id, sys_bond_id, sys_dia1_id, sys_dia2_id, sys_dia3_id",
+                "auto":"sp_no,sp_no1,sp_no2,sp_no3,creation_date"
+            },
+            "after_insert": {
+                "segment":"recent_sp",
+                "ip":"seg1_sp_no, sys_sp1_id",
+                "item_order":"sp_no, sys_sp_id"
+            },
+            "before_update": {
+                "checked":""
+            }
+        }
+    },
+    "item": {
+        "kor": {
+            "sys_id":"ID",
+            "sys_reg_date":"등록일",
+            "sys_update_date":"수정일",
+            "sys_description":"설명",
+            "sys_seg1_id":"세그먼트1ID",
+            "sys_seg2_id":"세그먼트2ID",
+            "sys_shank_id":"샹크ID",
+            "sys_sub1_id":"부자재1ID",
+            "sys_sub2_id":"부자재2ID",
+            "sys_ip_id":"IPID",
+            "product_name":"품명",
+            "group_name":"그룹명",
+            "seg1_no":"세그먼트1번호",
+            "seg1_amount":"세그먼트1수량",
+            "seg2_no":"세그먼트2번호",
+            "seg2_amount":"세그먼트2수량",
+            "shank_name":"샹크이름",
+            "shank_amount":"샹크수량",
+            "sub1_name":"부자재1이름",
+            "sub1_amount":"부자재1수량",
+            "sub2_name":"부자재2이름",
+            "sub2_amount":"부자재2수량",
+            "mark":"각인",
+            "welding":"용접",
+            "dressing":"드레싱",
+            "color":"페인트",
+            "recent_ip":"최근IP",
+            "image":"이미지"
+        },
+        "sys": [
+            "sys_id",
+            "sys_reg_date",
+            "sys_update_date",
+            "sys_description",
+            "sys_seg1_id",
+            "sys_seg2_id",
+            "sys_shank_id",
+            "sys_sub1_id",
+            "sys_sub2_id",
+            "sys_ip_id"
+        ],
+        "auto":[
+            "recent_ip"
+        ],
+        "trigger": {
+            "before_insert": {
+                "sys_col_id":"seg1,seg2,shank,sub1,sub2,ip"
+            },
+            "before_update": {
+                "sys_col_id":"seg1,seg2,shank,sub1,sub2,ip"
+            }
+        }
+    },
 
-        ]
+    "ip": {
+        "kor": {
+            "sys_id":"ID",
+            "sys_reg_date":"등록일",
+            "sys_update_date":"수정일",
+            "sys_description":"설명",
+            "sys_item1_id":"제품1ID",
+            "sys_item2_id":"제품2ID",
+            "sys_item3_id":"제품3ID",
+            "sys_item4_id":"제품4ID",
+            "sys_seg1_id":"세그먼트1ID",
+            "sys_seg2_id":"세그먼트2ID",
+            "sys_sp1_id":"SP1ID",
+            "sys_sp2_id":"SP2ID",
+            "sys_shank1_id":"샹크1ID",
+            "sys_shank2_id":"샹크2ID",
+            "sys_shank3_id":"샹크3ID",
+            "sys_shank4_id":"샹크4ID",
+            "sys_sub1_id":"부자재1ID",
+            "sys_sub2_id":"부자재2ID",
+            "sys_sub3_id":"부자재3ID",
+            "sys_sub4_id":"부자재4ID",
+            "ip_no":"IP NO",
+            "ip_no1":"IP년도",
+            "ip_no2":"IP번호",
+            "ip_no3":"최근IP",
+            "creation_date":"작성일",
+            "due_date":"출고예정일",
+            "item_group_name":"제품 그룹",
+            "item1_name":"제품1이름",
+            "item1_amount":"제품1수량",
+            "item2_name":"제품2이름",
+            "item2_amount":"제품2수량",
+            "item3_name":"제품3이름",
+            "item3_amount":"제품3수량",
+            "item4_name":"제품4이름",
+            "item4_amount":"제품4수량",
+            "image":"이미지",
+            "seg1_no":"세그먼트1번호",
+            "seg1_sp_no":"세그먼트1SP번호",
+            "seg1_amount":"세그먼트1수량",
+            "seg1_memo1":"세그먼트1메모1",
+            "seg1_memo2":"세그먼트1메모2",
+            "seg2_no":"세그먼트2번호",
+            "seg2_sp_no":"세그먼트2SP번호",
+            "seg2_amount":"세그먼트2수량",
+            "seg2_memo1":"세그먼트2메모1",
+            "seg2_memo2":"세그먼트2메모2",
+            "shank1_name":"샹크1이름",
+            "shank1_amount":"샹크1수량",
+            "shank2_name":"샹크2이름",
+            "shank2_amount":"샹크2수량",
+            "shank3_name":"샹크3이름",
+            "shank3_amount":"샹크3수량",
+            "shank4_name":"샹크4이름",
+            "shank4_amount":"샹크4수량",
+            "shank_memo1":"샹크메모1",
+            "shank_memo2":"샹크메모2",
+            "sub1_name":"부자재1이름",
+            "sub1_amount":"부자재1수량",
+            "sub1_memo1":"부자재1메모1",
+            "sub1_memo2":"부자재1메모2",
+            "sub2_name":"부자재2이름",
+            "sub2_amount":"부자재2수량",
+            "sub2_memo1":"부자재2메모1",
+            "sub2_memo2":"부자재2메모2",
+            "sub3_name":"부자재3이름",
+            "sub3_amount":"부자재3수량",
+            "sub3_memo1":"부자재3메모1",
+            "sub3_memo2":"부자재3메모2",
+            "sub4_name":"부자재4이름",
+            "sub4_amount":"부자재4수량",
+            "sub4_memo1":"부자재4메모1",
+            "sub4_memo2":"부자재4메모2",
+            "welding1":"용접1",
+            "welding2":"용접2",
+            "dressing1":"드레싱1",
+            "dressing2":"드레싱2",
+            "paint1":"페인트1",
+            "paint2":"페인트2",
+            "memo1":"비고1",
+            "memo2":"비고2",
+            "memo3":"비고3",
+            "memo4":"비고4",
+            "checked":"검수여부"
+        },
+        "sys": [
+            "sys_id",
+            "sys_reg_date",
+            "sys_update_date",
+            "sys_description",
+            "sys_item1_id",
+            "sys_item2_id",
+            "sys_item3_id",
+            "sys_item4_id",
+            "sys_seg1_id",
+            "sys_seg2_id",
+            "sys_sp1_id",
+            "sys_sp2_id",
+            "sys_shank1_id",
+            "sys_shank2_id",
+            "sys_shank3_id",
+            "sys_shank4_id",
+            "sys_sub1_id",
+            "sys_sub2_id",
+            "sys_sub3_id",
+            "sys_sub4_id"
+        ],
+        "auto": [
+            "ip_no",
+            "ip_no1",
+            "ip_no2",
+            "ip_no3",
+            "creation_date"
+
+        ],
+        "trigger": {
+            "before_insert": {
+                "sys_col_id":"bond_name,dia1,dia2,dia3",
+                "auto":"ip_no,ip_no1,ip_no2,ip_no3,creation_date"
+            },
+            "after_insert": {
+                "item":"recent_sp",
+                "item_order":"ip_no, sys_ip_id"
+            },            
+            "before_update": {
+                "sys_col_id":"bond_name,dia1,dia2,dia3",
+                "auto":"checked"
+            }
+        }
     },
 
     "item_order": {
         "kor": {
+            "sys_id":"ID",
+            "sys_reg_date":"등록일",
+            "sys_update_date":"수정일",
+            "sys_description":"설명",        
+            "sys_customer_id":"수주처ID",
+            "sys_item_id":"제품ID",
+            "sys_ip_id":"IPID",
+            "sys_sp_id":"SPID",
+            "sys_seg_id":"세그먼트ID",
+            "sys_bond_id":"본드ID",
             "customer_name" : "수주처",
             "order_date" : "수주일",
             "order_no" : "수주 번호",

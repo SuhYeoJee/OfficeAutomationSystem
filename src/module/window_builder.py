@@ -48,12 +48,17 @@ class WindowBuilder():
         lineEdit.setFixedWidth(size) 
         return lineEdit
     
-    def get_label_and_line_edit_layout(self, label_text,dialog_widgets={}, key:str='')->QHBoxLayout:
+    def get_label_and_line_edit_layout(self, label_text,dialog_widgets={}, key:str='', domains:list=[])->QHBoxLayout:
         layout = QHBoxLayout()
         layout.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         # --------------------------
         line_edit = QLineEdit()
-        line_edit.setFixedWidth(100) 
+        line_edit.setFixedWidth(200)
+
+        if domains:
+            completer = QCompleter([' ' + str(x) for x in domains])
+            line_edit.setCompleter(completer)
+
         if not key:
             key = label_text
         dialog_widgets[key] = line_edit

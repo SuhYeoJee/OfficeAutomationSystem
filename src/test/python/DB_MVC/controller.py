@@ -51,7 +51,7 @@ class Controller:
     def on_ip_no_cell_clicked(self, row, col, table_name):
         if col == self.get_table_col_index('ip_no',table_name):
             ip_no = self.get_table_by_name(table_name).get_cell_text((row,col))
-            ip_data = self.model.select_table_with_wheres('ip',[f"`auto_ip_no` = '{ip_no}'"])[0]
+            ip_data = self.model.select_table_with_wheres('ip',[f"`ip_no` = '{ip_no}'"])[0]
             self.view.get_ip_viewer(ip_data)
             self.view.dialogs['ip_viewer'].widgets["ip_viewer_submit"].clicked.connect(lambda: self.ip_viewer_update_ip(ip_data['sys_id']))
             self.view.dialogs['ip_viewer'].widgets["ip_viewer_image_export"].clicked.connect(self.t)
@@ -59,7 +59,7 @@ class Controller:
 
         if col == self.get_table_col_index('sp_no',table_name): # 이거 함수 분리
             sp_no = self.get_table_by_name(table_name).get_cell_text((row,col))
-            sp_data = self.model.select_table_with_wheres('sp',[f"`auto_sp_no` = '{sp_no}'"])[0]
+            sp_data = self.model.select_table_with_wheres('sp',[f"`sp_no` = '{sp_no}'"])[0]
             self.view.get_sp_viewer(sp_data)
             self.view.dialogs['sp_viewer'].widgets["sp_viewer_submit"].clicked.connect(lambda: self.sp_viewer_update_sp(sp_data['sys_id']))
 
@@ -162,22 +162,35 @@ class Controller:
     def update_and_show_insert_dialog(self):
         table_name = self.get_db_view_table_name()
         dialog_table_cols = self.model.get_table_cols_by_options(table_name,['except_sys','except_auto','except_insert'])
+        domain_raw_datas = self.model.db_spec.get(table_name,{}).get("domain",{})
 
-        self.view.get_db_view_insert_dialog(dialog_table_cols)
+        def get_domains_from_dict(domain_data):
+            table_name, col = next(iter(domain_data.items()), (None, None))
+            domains = self.model.select_table_col_all(table_name,col)
+            return list(set(domains))
+        
+        domain_datas = {}
+        for k,v in domain_raw_datas.items():
+            if isinstance(v,dict):
+                domain_datas[k] = get_domains_from_dict(v)
+            else:
+                domain_datas[k] = v
+        # --------------------------
+        self.view.get_db_view_insert_dialog(table_name, dialog_table_cols,domain_datas)
         self.view.show_db_view_insert_dialog()
         self.view.widgets["db_view_insert_submit"].clicked.connect(lambda : self.insert_dialog_data(table_name, dialog_table_cols))
 
     def translate_kor_to_eng_cols(self,cols,datas):
         result = {}
         for k, v in datas.items():
-            eng = next((eng for eng, kor in cols.items() if kor == k), None)
+            eng = next((eng.strip() for eng, kor in cols.items() if kor == k), None)
             key = eng if eng else k
             result[key] = v
         return result
 
     def insert_dialog_data(self, table_name, dialog_table_cols):
         self.view.dialogs['db_view_insert'].close()      
-        insert_data = self.get_insert_data_from_dialog() 
+        insert_data = self.get_insert_data_from_dialog()
         insert_data = self.translate_kor_to_eng_cols(dialog_table_cols,insert_data)
         self.db_view_do_table_insert(table_name, insert_data)
 
@@ -189,6 +202,7 @@ class Controller:
     def set_db_view_table_col_combo_box(self) -> None:
         table_name = self.get_db_view_table_name()
         table_cols = self.model.get_table_cols(table_name)
+        table_cols.insert(0,"all")
         self.view.change_combo_box('db_view_search_cols_combo_box',table_cols)
 
     def set_db_view_table_all_contents(self) -> None:
@@ -199,6 +213,9 @@ class Controller:
     def set_db_view_table_search_contents(self) -> None:
         table_name = self.get_db_view_table_name()
         table_col = self.get_db_view_search_col()
+        if table_col == "all":
+            #여기에서 처리
+            ...
         keyword = self.get_db_view_search_keyword()
         table_contents = self.model.select_table_like_keyword(table_name,table_col,keyword)
         self.view.show_table(table_contents)

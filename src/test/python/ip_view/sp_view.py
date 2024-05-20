@@ -130,7 +130,7 @@ class SpViewTable(TablePlusWidget):
                 (27,5):[(1,1),"",['right','editable']],
                 (28,5):[(1,2),"",['right','editable']],
                 # --------------------------
-                (6,2):[(1,2),"",['left','editable']],
+                (6,2):[(1,3),"",['left','editable']],
                 (33,2):[(1,8),"",['left','editable']],
                 (34,2):[(1,8),"",['left','editable']],
                 (35,2):[(1,8),"",['left','editable']],
@@ -166,12 +166,11 @@ class SpViewTable(TablePlusWidget):
     # db col name 과 cell position 정보 매핑
     def get_pos_data(self)->dict:
         return {
-            "auto_sp_no1"                   : (4,2),  # 제조지시 NO. 1
-            "auto_sp_no2"                   : (4,3),  # 제조지시 NO. 2
-            "auto_sp_no3"                   : (4,4),  # 제조지시 NO. 3
-            "auto_date"                          : (4,7),  # 일자
-            "seg_no1"                        : (6,2),  # 세그먼트 No. 1
-            "seg_no2"                        : (6,4),  # 세그먼트 No. 2
+            "sp_no1"                   : (4,2),  # 제조지시 NO. 1
+            "sp_no2"                   : (4,3),  # 제조지시 NO. 2
+            "sp_no3"                   : (4,4),  # 제조지시 NO. 3
+            "creation_date"                          : (4,7),  # 일자
+            "segment_no"                        : (6,2),  # 세그먼트 No.
             "product_name"                  : (7,2),  # 품명1
             "amount_net"                     : (6,8),  # 수량NET
             "amount_work"                    : (7,8),  # 수량작업량
@@ -244,7 +243,7 @@ class SpViewTable(TablePlusWidget):
     
     # -------------------------------------------------------------------------------------------
     def set_sp_data(self,datas)->None:
-        self.sp_data = datas # {'auto_date': '2024-05-12',}
+        self.sp_data = datas
         result = {self.pos_data[key]: self.sp_data[key] for key in self.pos_data if key in self.sp_data}
         self.fill_datas_position(result)
         self.show()
@@ -430,7 +429,7 @@ class TestWindow(QMainWindow):
         self.setCentralWidget(self.wb.get_button("sp_view",self.open_sp_view))
 
     def open_sp_view(self):
-        dialog = SPViewer(self,{'auto_date':"asdlfialwseijf"})
+        dialog = SPViewer(self,{'creation_date':"asdlfialwseijf"})
         dialog.show()
         from pprint import pprint
         pprint(dialog.get_sp_view_table().get_labeled_data())
@@ -446,7 +445,7 @@ def spv_test():
 def spvt_test():
     app = QApplication([])
     i = SpViewTable()
-    i.set_sp_data({'auto_date':"asdlfialwseijf"})
+    i.set_sp_data({'creation_date':"asdlfialwseijf"})
     app.exec_()
 
 if __name__ == "__main__":

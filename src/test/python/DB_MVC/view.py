@@ -37,14 +37,25 @@ class View(QMainWindow):
     # ===========================================================================================
 
     def get_top_button_layout(self):
+
+        def on_button_clicked(button):
+            [self.widgets[x].setStyleSheet("") for x in ['order_view_open','db_view_open','paper_view_open','work_view_open']]
+            self.widgets[button].setStyleSheet("background-color: darkGray;")
+
+
         layout = QHBoxLayout()
-        self.widgets['db_view_open'] = self.wb.get_button("DB 관리", self.show_this_view, 'db_view')
-        self.widgets['paper_view_open'] = self.wb.get_button("작업지시서 생성", self.show_this_view, 'paper_view')
+        self.widgets['order_view_open'] = self.wb.get_button("수주 현황 보기", self.show_this_view, 'order_view')
+        self.widgets['order_view_open'].clicked.connect(lambda: on_button_clicked('order_view_open'))
+        layout.addWidget(self.widgets['order_view_open'])
         self.widgets['work_view_open'] = self.wb.get_button("작업 현황 보기", self.show_this_view, 'work_view')
-        layout.addWidget(self.wb.get_button("수주 현황 보기", self.show_this_view, 'order_view'))
-        layout.addWidget(self.widgets['work_view_open'])
-        layout.addWidget(self.widgets['paper_view_open'])
-        layout.addWidget(self.widgets['db_view_open'])
+        self.widgets['work_view_open'].clicked.connect(lambda: on_button_clicked('work_view_open'))
+        layout.addWidget(self.widgets['work_view_open'])        
+        self.widgets['paper_view_open'] = self.wb.get_button("작업지시서 생성", self.show_this_view, 'paper_view')
+        self.widgets['paper_view_open'].clicked.connect(lambda: on_button_clicked('paper_view_open'))
+        layout.addWidget(self.widgets['paper_view_open'])        
+        self.widgets['db_view_open'] = self.wb.get_button("DB 관리", self.show_this_view, 'db_view')
+        self.widgets['db_view_open'].clicked.connect(lambda: on_button_clicked('db_view_open'))
+        layout.addWidget(self.widgets['db_view_open'])        
         return layout
     
     def show_this_view(self,widget):
@@ -139,20 +150,24 @@ class View(QMainWindow):
         # -------------------------------------------------------------------------------------------
         return widget
     # -------------------------------------------------------------------------------------------
-    def get_db_view_insert_dialog(self, table_cols:dict = {}):
+    def get_db_view_insert_dialog(self, table_name:str='', table_cols:dict = {}, domain_datas:dict = {}):
         first_half_layout = QVBoxLayout()
         second_half_layout = QVBoxLayout()
 
-        kor_table_cols = list(table_cols.values())
-        mid_idx = (len(kor_table_cols) + 1) // 2
-        first_half, second_half = kor_table_cols[:mid_idx], kor_table_cols[mid_idx:]
+        eng_table_cols = list(table_cols.keys())
+        mid_idx = (len(eng_table_cols) + 1) // 2
+        first_half, second_half = eng_table_cols[:mid_idx], eng_table_cols[mid_idx:]
 
         self.dialog_widgets = {}
 
-        for col in first_half:
-            first_half_layout.addLayout(self.wb.get_label_and_line_edit_layout(col,self.dialog_widgets))
-        for col in second_half:
-            second_half_layout.addLayout(self.wb.get_label_and_line_edit_layout(col,self.dialog_widgets))
+        for eng_col in first_half:
+            kor_col = table_cols[eng_col]
+            domains = domain_datas.get(eng_col,[])
+            first_half_layout.addLayout(self.wb.get_label_and_line_edit_layout(kor_col,self.dialog_widgets,eng_col,domains))
+        for eng_col in second_half:
+            kor_col = table_cols[eng_col]
+            domains = domain_datas.get(eng_col,[])
+            second_half_layout.addLayout(self.wb.get_label_and_line_edit_layout(kor_col,self.dialog_widgets,eng_col,domains))
         # --------------------------
         input_layout = QHBoxLayout()
         input_layout.addLayout(first_half_layout)
@@ -165,6 +180,7 @@ class View(QMainWindow):
         layout.addWidget(self.widgets['db_view_insert_submit'])
         # --------------------------
         dialog = QDialog(self)
+        dialog.setWindowTitle(f'[{table_name}] 새 항목 입력')
         dialog.setLayout(layout)
         self.dialogs["db_view_insert"] = dialog
     # -------------------------------------------------------------------------------------------

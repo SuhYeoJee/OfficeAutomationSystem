@@ -290,8 +290,8 @@ def main():
 
     def get_datas():
         return {
-            (4,2):'auto_ip_no1',
-            (6,2):'auto_ip_no2',
+            (4,2):'ip_no1',
+            (6,2):'ip_no2',
             (8,2):'item_group_name',
         }
 
