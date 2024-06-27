@@ -276,7 +276,6 @@ class SPModel:
         sp_data.update(self.get_powder_amounts(sp_data))
         return sp_data
 
-
     def sp_viewer_dosing_diamix_update(self,sp_data):
         return self.sp_viewer_workload_update(sp_data)
 
@@ -440,6 +439,8 @@ class Model(SPModel):
             new_ip = {x:new_ip[x] if new_ip[x] else 'NULL' for x in new_ip}
             self.insert_table('ip',new_ip)
 
+        return new_ips
+
     # [table_info] ===========================================================================================
     def get_table_names(self):
         tables_raw = self.dbi.execute_query("SHOW TABLES;")
@@ -521,7 +522,7 @@ class Model(SPModel):
             wheres.append(where)
             querys.append(f"DELETE FROM {table_name} WHERE {where}; ")
         for query in querys:
-            self.dbi.execute_query(query)        
+            self.dbi.execute_query(query)
     # [update] ===========================================================================================
     def update_table_with_return_wheres(self,table_name,update_datas=[{}]):
         querys, wheres = [], []
@@ -591,7 +592,6 @@ def get_order_rows():
     'sys_seg_id': 'NULL',
     'sys_sp_id': 'NULL',
     'sys_update_date': '2024-05-13 19:19:15'}]    
-
 
 if __name__ == "__main__":
     m = Model()
