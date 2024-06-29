@@ -2,7 +2,7 @@ import sqlite3
 
 class DBInterface:
     def __init__(self):
-        self.db_name = 'nova.db'
+        self.db_name = 'src/data/nova.db'
         self.connection = None
         self.cursor = None
     # ===========================================================================================
@@ -10,14 +10,14 @@ class DBInterface:
         try:
             self.connection = sqlite3.connect(self.db_name)
             self.cursor = self.connection.cursor()
-            print(f"Connected to SQLite database '{self.db_name}'")
+            print(f"Connected")# to SQLite database '{self.db_name}'")
         except sqlite3.Error as e:
             print(f"Error connecting to SQLite database: {e}")
     # --------------------------
     def disconnect(self):
         if self.connection:
             self.connection.close()
-            print(f"Disconnected from SQLite database '{self.db_name}'")
+            print(f"Disconnected")# from SQLite database '{self.db_name}'")
         else:
             print("Already disconnected from database")
         self.connection = None
@@ -45,6 +45,8 @@ class DBInterface:
                 return rows
         except sqlite3.Error as e:
             print(f"Error executing query: {e}")
+            print(query)
+            print('# ------------------------------------------')
             return []
     # ===========================================================================================
 

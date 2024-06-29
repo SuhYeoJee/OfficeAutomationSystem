@@ -29,9 +29,7 @@ class Controller:
 
     # [test] ===========================================================================================
 
-    def t(self):
-        print('t')
-
+    def t(self):print('t')
 
     def sp_viewer_do_workload_update(self):
         sp_data = self.sp_viewer_get_sp_data() #현재 입력값 가져오기

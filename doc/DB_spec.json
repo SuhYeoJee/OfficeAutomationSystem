@@ -10,8 +10,21 @@
         "sp",
         "item",
         "ip",
-        "item_order"
+        "item_order",
+        "test"
     ],
+    "test": {
+        "kor": {
+            "id":"ID",
+            "name":"등록일"
+        },
+        "sys": [
+            "sys_id",
+            "sys_reg_date",
+            "sys_update_date",
+            "sys_description"
+        ]
+    },    
     "customer": {
         "kor": {
             "sys_id":"ID",

@@ -1,6 +1,7 @@
 
 *.xlsx
 config.txt
+.db
 
 # ======================================
 # Visual Studio

@@ -214,10 +214,11 @@ class View(QMainWindow):
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
     # -------------------------------------------------------------------------------------------
-    # 테이블 전환
-    def show_table(self,dictList:list=[{}], target_table:str = 'db_view_table'):
+    # 테이블 내용 갱신
+    def show_table(self,dictList:list=[{}], target_table:str = 'db_view_table',no_sys_cols:bool=True):
         self.widgets[target_table].clear()
         try:
+            
             self.init_table(len(dictList)+1,len(dictList[0])+1,target_table) # 추가row(표머리), 추가col(체크박스)
         except IndexError:
             self.init_table(1,1,target_table)
@@ -229,8 +230,13 @@ class View(QMainWindow):
             for row, d in enumerate(dictList):
                 self.widgets[target_table].setCellWidget(row+1, 0, QCheckBox())                
                 for col, (key, val) in enumerate(d.items(), start=1):
+                    
                     if row == 0: #colName
                         self.widgets[target_table].setItem(0, col, QTableWidgetItem(str(key)))
+                        if no_sys_cols and 'sys_' in key:
+                            self.widgets[target_table].setColumnHidden(col,True)
+                        else:
+                            self.widgets[target_table].setColumnHidden(col,False)
                     self.widgets[target_table].clearSpans()
                     self.widgets[target_table].setItem(row + 1, col, QTableWidgetItem(str(val)))
         self.widgets[target_table].resizeColumnsToContents()

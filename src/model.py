@@ -213,7 +213,7 @@ class Model:
         keywords = ["'%"+k.strip().replace("'","\'")+"%'" for k in keyword.split(',')]
         table_cols = self.get_table_cols(table_name)
         if table_col == "all":
-            table_col = f"CONCAT_WS('', {', '.join([f'`{x}`' for x in table_cols])})"
+            table_col = ' || '.join([f"COALESCE(`{x}`, '')" for x in table_cols])
         else:
             table_col = f"`{table_col}`"
         where_str = ' AND '.join([ table_col + ' LIKE ' + k for k in keywords])
@@ -236,8 +236,7 @@ class Model:
     def delete_table(self,table_name,delete_datas=[{}]):
         querys, wheres = [], []
         for data in delete_datas:
-            where = self.get_where_str('id',data)
-            # where = self.get_where_str('sys_id',data)
+            where = self.get_where_str('sys_id',data)
             wheres.append(where)
             querys.append(f"DELETE FROM {table_name} WHERE {where}; ")
         for query in querys:
@@ -249,8 +248,7 @@ class Model:
         for data in update_datas:
             sets = [f"`{k.strip()}` = '{data[k].strip()}'".replace("'NULL'","NULL") for k in data]
             sets_str = ' , '.join(sets)
-            where = self.get_where_str('id',data)
-            # where = self.get_where_str('sys_id',data)
+            where = self.get_where_str('sys_id',data)
             wheres.append(where)
             querys.append(f"UPDATE {table_name} SET {sets_str} WHERE {where}; ")
         for query in querys:
@@ -287,13 +285,13 @@ if __name__ == "__main__":
     # r = m.make_and_insert_new_sps(get_order_rows())
 
     # print(m.get_table_names())
-    # print(m.get_table_cols('test'))
+    print(m.get_table_cols('sp'))
     # print(m.select_table_all('test'))
-    print(m.insert_table('test',{'name':'Sam'}))
-    print(m.select_table_all('test'))
-    print(m.update_table_with_return_wheres('test',[{'id': '4', 'name': 'SamSam'}]))
-    print(m.select_table_all('test'))
-    print(m.update_table_and_select_updated('test',[{'id': '4', 'name': 'SamSamSam'}]))
+    # print(m.insert_table('test',{'name':'Sam'}))
+    # print(m.select_table_all('test'))
+    # print(m.update_table_with_return_wheres('test',[{'id': '4', 'name': 'SamSam'}]))
+    # print(m.select_table_all('test'))
+    # print(m.update_table_and_select_updated('test',[{'id': '4', 'name': 'SamSamSam'}]))
     # print(m.delete_table('test',[{'id': '4', 'name': 'Sam'}]))
     # print(m.select_table_all('test'))
 

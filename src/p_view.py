@@ -210,8 +210,6 @@ class pView(QDialog):
     
     # 사이드 레이아웃 값 지정
     def set_sp_view_layout(self, sp_data:dict={})->None:
-        if not sp_data:
-            sp_data = self.sp_data
         [self.widgets[key].setText(sp_data[key]) for key in self.widgets if key in sp_data]
 
     # sp 사이드, 표 값 지정
@@ -220,9 +218,8 @@ class pView(QDialog):
         self.widgets['pTable'].set_sp_data(sp_data)
 
     # 사이드 레이아웃 읽기
-    def get_sp_side_data(self)->dict:
-        side_data = {key:self.widgets[key].text() for key in self.widgets if key in self.sp_data}
-        self.sp_data.update(side_data)
+    def get_sp_side_data(self, sp_data:dict={})->dict:
+        side_data = {key:self.widgets[key].text() for key in self.widgets if key in sp_data}
         return side_data
     # ===========================================================================================
     

@@ -145,7 +145,7 @@ class pTableForm:
             "sp_no2"                   : (4,3),  # 제조지시 NO. 2
             "sp_no3"                   : (4,4),  # 제조지시 NO. 3
             "creation_date"                          : (4,7),  # 일자
-            "segment_no"                        : (6,2),  # 세그먼트 No.
+            "seg_no"                        : (6,2),  # 세그먼트 No.
             "product_name"                  : (7,2),  # 품명1
             "amount_net"                     : (6,8),  # 수량NET
             "amount_work"                    : (7,8),  # 수량작업량
